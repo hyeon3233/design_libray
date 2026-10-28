@@ -1,5 +1,13 @@
 <script setup>
 import logoImg from '../assets/logo.png'
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
+
+const route = useRoute()
+
+const isProjectActive = computed(() => {
+  return route.path === '/projects' || route.path.startsWith('/folders/')
+})
 </script>
 
 
@@ -12,7 +20,12 @@ import logoImg from '../assets/logo.png'
     <nav class="side-nav">
   <RouterLink to="/">⌂　홈</RouterLink>
   <RouterLink to="/favorites">☆　즐겨찾기</RouterLink>
-  <RouterLink to="/projects">▱　프로젝트</RouterLink>
+  <RouterLink
+  to="/projects"
+  :class="{ 'router-link-active': isProjectActive }"
+>
+  ▱　모든 폴더
+</RouterLink>
   <RouterLink to="/categories">◇　카테고리</RouterLink>
   
 
@@ -26,7 +39,7 @@ import logoImg from '../assets/logo.png'
 <style scoped>
 .menu-divider {
   display: block;
-  width: 233px;
+  width: 100%;
   height: 1px;
   min-height: 1px;
   background: #dedee2;
@@ -35,13 +48,14 @@ import logoImg from '../assets/logo.png'
 }
 
 .brand {
-  margin-bottom: 45px;
+  margin-bottom: 20px;
 }
 
 .brand-logo {
-  width: 207px;
-  height: 48px;
+  width: 150px;
+  height: auto;
   display: block;
   margin: 0 auto;
+  object-fit: contain;
 }
 </style>

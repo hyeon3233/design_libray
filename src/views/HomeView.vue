@@ -1,6 +1,15 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { folderList } from '../stores/folders'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function openFolder(folder) {
+  router.push(`/folders/${folder.id}`)
+}
+
 import FolderCard from '../components/FolderCard.vue'
 import AssetCard from '../components/AssetCard.vue'
 
@@ -72,57 +81,6 @@ function removeFolderThumbnail() {
 function changeViewMode(mode) {
   viewMode.value = mode
 }
-
-const folders = [
-  {
-    id: 1,
-    name: '공유용',
-    category: '기타',
-    fileCount: 24,
-    updatedAt: '2026.10.27',
-    color: '#E9F2FF',
-    thumbnail: sharedImg
-  },
-  {
-    id: 2,
-    name: '명함',
-    category: '인쇄물',
-    fileCount: 12,
-    updatedAt: '2026.10.25',
-    color: '#FFE9F0',
-    thumbnail: businessCardImg
-  },
-  {
-    id: 3,
-    name: '앱스토어 이미지',
-    category: 'GUI·UI',
-    fileCount: 18,
-    updatedAt: '2026.10.24',
-    color: '#E9F6EE',
-    thumbnail: appstoreImg
-  },
-  {
-    id: 4,
-    name: '체리 QR',
-    category: '디자인 소스',
-    fileCount: 8,
-    updatedAt: '2026.10.22',
-    color: '#FFF5D9',
-    thumbnail: cherryQrImg
-  },
-  {
-    id: 5,
-    name: '기타 디자인',
-    category: '기타',
-    fileCount: 15,
-    updatedAt: '2026.10.20',
-    color: '#F1EAFF',
-    thumbnail: cherryDesignImg
-  }
-]
-
-// 화면에 표시할 폴더 목록
-const folderList = ref([...folders])
 
 // 폴더 생성하기
 function createFolder() {
@@ -356,6 +314,7 @@ const filteredAssets = computed(() => {
           :updated-at="folder.updatedAt"
           :color="folder.color"
           :thumbnail="folder.thumbnail"
+          @click="openFolder(folder)"
         />
       </div>
     </section>

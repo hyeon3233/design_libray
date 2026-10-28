@@ -7,11 +7,12 @@
 
 /* 왼쪽 사이드바 */
 .sidebar {
-  width: 270px;
+  width: 190px;
   flex-shrink: 0;
   background: #faf8fa;
   padding: 33px 27px 30px;
   border-radius: 0 25px 25px 0;
+  margin-right: 20px;
 }
 
 .brand {
@@ -49,7 +50,8 @@
   background: #fff0f4;
 }
 
-.side-nav a.router-link-exact-active {
+.side-nav a.router-link-exact-active,
+.side-nav a.router-link-active {
   background: #ffe8ef;
   color: #ff2863;
   font-weight: 600;
