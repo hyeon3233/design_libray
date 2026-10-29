@@ -4,12 +4,6 @@ import { ref, computed } from 'vue'
 import { folderList } from '../stores/folders'
 import { useRouter } from 'vue-router'
 
-const router = useRouter()
-
-function openFolder(folder) {
-  router.push(`/folders/${folder.id}`)
-}
-
 import FolderCard from '../components/FolderCard.vue'
 import AssetCard from '../components/AssetCard.vue'
 
@@ -26,15 +20,35 @@ import bannerImg from '../assets/recent/banner.png'
 import goodsImg from '../assets/recent/goods.png'
 import snsImg from '../assets/recent/sns.png'
 
+import chevronRight from '../assets/icon/chevron_1.svg'
+import chevronRightOn from '../assets/icon/chevron_1_on.svg'
+
+// 갤러리 / 목록 보기 SVG 아이콘
+import galleryOff from '../assets/icon/gallery_off.svg'
+import galleryOn from '../assets/icon/gallery_on.svg'
+import listOff from '../assets/icon/List_off.svg'
+import listOn from '../assets/icon/List_on.svg'
+
+const router = useRouter()
+
+function openFolder(folder) {
+  router.push(`/folders/${folder.id}`)
+}
+
 // 보기 방식
 const viewMode = ref('gallery')
+
+function changeViewMode(mode) {
+  viewMode.value = mode
+}
 
 // 새 폴더 팝업
 const showFolderModal = ref(false)
 const newFolderName = ref('')
 const newFolderCategory = ref('포토 프레임')
 const folderError = ref('')
-// 폴더 색상 5가지 (기존 폴더와 동일)
+
+// 폴더 색상 5가지
 const folderColors = [
   { name: '블루', value: '#E9F2FF' },
   { name: '핑크', value: '#FFE9F0' },
@@ -78,10 +92,6 @@ function removeFolderThumbnail() {
   newFolderThumbnail.value = ''
 }
 
-function changeViewMode(mode) {
-  viewMode.value = mode
-}
-
 // 폴더 생성하기
 function createFolder() {
   const name = newFolderName.value.trim()
@@ -119,6 +129,7 @@ function createFolder() {
   showFolderModal.value = false
 }
 
+// 카테고리 목록
 const categories = [
   '전체',
   '포토 프레임',
@@ -139,6 +150,7 @@ function selectCategory(category) {
   selectedCategory.value = category
 }
 
+// 최근 업로드 파일
 const recentAssets = [
   {
     id: 1,
@@ -183,6 +195,7 @@ const recentAssets = [
     updatedAt: '2026.10.22'
   }
 ]
+
 // 카테고리 이름 통일
 const categoryAliases = {
   '포토 프레임': ['포토 프레임', '포토프레임'],
@@ -269,7 +282,17 @@ const filteredAssets = computed(() => {
           :aria-pressed="viewMode === 'gallery'"
           @click="changeViewMode('gallery')"
         >
-          ▦ 갤러리 보기
+          <img
+            :src="viewMode === 'gallery' ? galleryOn : galleryOff"
+            alt=""
+            class="view-mode-icon icon-normal"
+          />
+          <img
+            :src="galleryOn"
+            alt=""
+            class="view-mode-icon icon-hover"
+          />
+          갤러리 보기
         </button>
 
         <button
@@ -278,7 +301,17 @@ const filteredAssets = computed(() => {
           :aria-pressed="viewMode === 'list'"
           @click="changeViewMode('list')"
         >
-          ☷ 목록 보기
+          <img
+            :src="viewMode === 'list' ? listOn : listOff"
+            alt=""
+            class="view-mode-icon icon-normal"
+          />
+          <img
+            :src="listOn"
+            alt=""
+            class="view-mode-icon icon-hover"
+          />
+          목록 보기
         </button>
       </div>
     </div>
@@ -297,7 +330,17 @@ const filteredAssets = computed(() => {
         </div>
 
         <RouterLink to="/categories" class="view-all">
-          전체보기 →
+          전체보기
+          <img
+            :src="chevronRight"
+            alt=""
+            class="view-all-icon icon-off"
+          />
+          <img
+            :src="chevronRightOn"
+            alt=""
+            class="view-all-icon icon-on"
+          />
         </RouterLink>
       </div>
 
@@ -330,7 +373,17 @@ const filteredAssets = computed(() => {
         </h2>
 
         <RouterLink to="/projects" class="view-all">
-          전체보기 →
+          전체보기
+          <img
+            :src="chevronRight"
+            alt=""
+            class="view-all-icon icon-off"
+          />
+          <img
+            :src="chevronRightOn"
+            alt=""
+            class="view-all-icon icon-on"
+          />
         </RouterLink>
       </div>
 
@@ -383,97 +436,97 @@ const filteredAssets = computed(() => {
         <div class="modal-field">
           <label for="folder-name">폴더 이름</label>
 
-            <input
-               id="folder-name"
-                  v-model="newFolderName"
-                  type="text"
-                 placeholder="예: 2026 포토프레임"
-                  maxlength="50"
-                 @input="folderError = ''"
-             />
+          <input
+            id="folder-name"
+            v-model="newFolderName"
+            type="text"
+            placeholder="예: 2026 포토프레임"
+            maxlength="50"
+            @input="folderError = ''"
+          />
 
-  <p v-if="folderError" class="folder-error">
-    {{ folderError }}
-  </p>
-</div>
+          <p v-if="folderError" class="folder-error">
+            {{ folderError }}
+          </p>
+        </div>
 
         <!-- 카테고리 -->
         <div class="modal-field">
-  <label for="folder-category">카테고리</label>
+          <label for="folder-category">카테고리</label>
 
-  <select
-    id="folder-category"
-    v-model="newFolderCategory"
-  >
-    <option
-      v-for="category in categories.filter(c => c !== '전체')"
-      :key="category"
-      :value="category"
-    >
-      {{ category }}
-    </option>
-  </select>
-</div>
+          <select
+            id="folder-category"
+            v-model="newFolderCategory"
+          >
+            <option
+              v-for="category in categories.filter(c => c !== '전체')"
+              :key="category"
+              :value="category"
+            >
+              {{ category }}
+            </option>
+          </select>
+        </div>
 
-<!-- 폴더 색상 -->
-<div class="modal-field">
-  <label>폴더 색상</label>
+        <!-- 폴더 색상 -->
+        <div class="modal-field">
+          <label>폴더 색상</label>
 
-  <div class="folder-color-options">
-    <button
-      v-for="color in folderColors"
-      :key="color.value"
-      type="button"
-      class="folder-color-option"
-      :class="{ selected: newFolderColor === color.value }"
-      :style="{ backgroundColor: color.value }"
-      :title="color.name"
-      :aria-label="color.name"
-      :aria-pressed="newFolderColor === color.value"
-      @click="newFolderColor = color.value"
-    >
-      <span v-if="newFolderColor === color.value">✓</span>
-    </button>
-  </div>
-</div>
+          <div class="folder-color-options">
+            <button
+              v-for="color in folderColors"
+              :key="color.value"
+              type="button"
+              class="folder-color-option"
+              :class="{ selected: newFolderColor === color.value }"
+              :style="{ backgroundColor: color.value }"
+              :title="color.name"
+              :aria-label="color.name"
+              :aria-pressed="newFolderColor === color.value"
+              @click="newFolderColor = color.value"
+            >
+              <span v-if="newFolderColor === color.value">✓</span>
+            </button>
+          </div>
+        </div>
 
-<!-- 썸네일 선택 -->
-<div class="modal-field">
-  <label>폴더 썸네일</label>
+        <!-- 썸네일 선택 -->
+        <div class="modal-field">
+          <label>폴더 썸네일</label>
 
-  <div class="thumbnail-upload">
-    <img
-      v-if="newFolderThumbnail"
-      :src="newFolderThumbnail"
-      class="thumbnail-preview"
-      alt="선택한 폴더 썸네일"
-    />
+          <div class="thumbnail-upload">
+            <img
+              v-if="newFolderThumbnail"
+              :src="newFolderThumbnail"
+              class="thumbnail-preview"
+              alt="선택한 폴더 썸네일"
+            />
 
-    <div v-else class="thumbnail-placeholder">
-      <span class="upload-icon">＋</span>
-      <span>대표 이미지 선택</span>
-      <small>PNG, JPG, WEBP · 최대 5MB</small>
-    </div>
+            <div v-else class="thumbnail-placeholder">
+              <span class="upload-icon">＋</span>
+              <span>대표 이미지 선택</span>
+              <small>PNG, JPG, WEBP · 최대 5MB</small>
+            </div>
 
-    <label class="thumbnail-upload-button">
-      이미지 선택
-      <input
-        type="file"
-        accept="image/png,image/jpeg,image/webp"
-        @change="uploadFolderThumbnail"
-      />
-    </label>
+            <label class="thumbnail-upload-button">
+              이미지 선택
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                @change="uploadFolderThumbnail"
+              />
+            </label>
 
-    <button
-      v-if="newFolderThumbnail"
-      type="button"
-      class="thumbnail-remove"
-      @click="removeFolderThumbnail"
-    >
-      이미지 삭제
-    </button>
-  </div>
-</div>
+            <button
+              v-if="newFolderThumbnail"
+              type="button"
+              class="thumbnail-remove"
+              @click="removeFolderThumbnail"
+            >
+              이미지 삭제
+            </button>
+          </div>
+        </div>
 
         <!-- 하단 버튼 -->
         <div class="modal-actions">
@@ -486,12 +539,12 @@ const filteredAssets = computed(() => {
           </button>
 
           <button
-  type="button"
-  class="create-btn"
-  @click="createFolder"
->
-  폴더 생성
-</button>
+            type="button"
+            class="create-btn"
+            @click="createFolder"
+          >
+            폴더 생성
+          </button>
         </div>
 
       </div>
@@ -593,11 +646,48 @@ const filteredAssets = computed(() => {
   border-radius: 9px;
   color: #7d89a2;
   cursor: pointer;
+
+  /* SVG 아이콘과 글씨 정렬 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+/* 마우스 호버 시 글씨 색상 */
+.view-options button:hover {
+  color: #ff376b;
 }
 
 .view-options .view-active {
   background: #fff0f4;
   color: #ff376b;
+}
+
+/* 갤러리 / 목록 아이콘 */
+.view-mode-icon {
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* 기본 아이콘 표시 */
+.view-options .icon-normal {
+  display: block;
+}
+
+.view-options .icon-hover {
+  display: none;
+}
+
+/* 선택되지 않은 버튼에 마우스를 올렸을 때 */
+.view-options button:not(.view-active):hover .icon-normal {
+  display: none;
+}
+
+.view-options button:not(.view-active):hover .icon-hover {
+  display: block;
 }
 
 @media (max-width: 1100px) {
@@ -839,6 +929,7 @@ const filteredAssets = computed(() => {
   margin: 0;
 }
 
+/* 팝업 닫기 버튼 */
 .modal-close {
   flex-shrink: 0;
   border: none;
@@ -926,7 +1017,6 @@ const filteredAssets = computed(() => {
   font-size: 12px;
   margin: 0;
 }
-
 
 /* 폴더 색상 선택 */
 .folder-color-options {
@@ -1032,4 +1122,36 @@ const filteredAssets = computed(() => {
   overflow-y: auto;
 }
 
+/* 전체보기 텍스트와 화살표 정렬 */
+.view-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* 전체보기 화살표 */
+.view-all-icon {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* 기본 상태: 회색 SVG 표시 */
+.view-all .icon-off {
+  display: inline-block;
+}
+
+.view-all .icon-on {
+  display: none;
+}
+
+/* 마우스를 올렸을 때: 핑크 SVG 표시 */
+.view-all:hover .icon-off {
+  display: none;
+}
+
+.view-all:hover .icon-on {
+  display: inline-block;
+}
 </style>

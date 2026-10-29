@@ -4,6 +4,20 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { folderList } from '../stores/folders'
 
+import {
+  isFavorite,
+  toggleFavorite
+} from '../stores/favorites'
+
+// 갤러리 / 목록 보기 SVG 아이콘
+import galleryOff from '../assets/icon/gallery_off.svg'
+import galleryOn from '../assets/icon/gallery_on.svg'
+import listOff from '../assets/icon/List_off.svg'
+import listOn from '../assets/icon/List_on.svg'
+
+import favoriteOff from '../assets/icon/Favorit_off.svg'
+import favoriteOn from '../assets/icon/Favorit_on.svg'
+
 const route = useRoute()
 
 // 주소의 ID로 폴더 자동 찾기
@@ -15,18 +29,18 @@ const folder = computed(() => {
 
 // 임시 화면 확인용 파일 데이터
 const demoFiles = [
-  { id: 1, name: '체리 명함 시안 01', type: 'AI', size: '3.2MB', updatedAt: '2026.10.28', color: '#FFE8EF' },
-  { id: 2, name: '체리 명함 시안 02', type: 'PSD', size: '8.4MB', updatedAt: '2026.10.27', color: '#FCE5F0' },
-  { id: 3, name: '체리 명함 시안 03', type: 'PNG', size: '1.8MB', updatedAt: '2026.10.27', color: '#F7E9F2' },
-  { id: 4, name: '명함 목업 이미지', type: 'JPG', size: '2.1MB', updatedAt: '2026.10.26', color: '#F4E9E6' },
-  { id: 5, name: '로고 버전 명함', type: 'AI', size: '4.5MB', updatedAt: '2026.10.25', color: '#FBE6EE' },
-  { id: 6, name: '명함 일러스트', type: 'AI', size: '3.7MB', updatedAt: '2026.10.24', color: '#EAF2FD' },
-  { id: 7, name: '명함 배경 패턴', type: 'PNG', size: '1.3MB', updatedAt: '2026.10.23', color: '#F5E9FF' },
-  { id: 8, name: '행사 명함', type: 'PDF', size: '2.6MB', updatedAt: '2026.10.22', color: '#FFF1DE' },
-  { id: 9, name: '명함 시안 04', type: 'PSD', size: '5.2MB', updatedAt: '2026.10.21', color: '#E9F6EE' },
-  { id: 10, name: '명함 시안 05', type: 'AI', size: '4.1MB', updatedAt: '2026.10.20', color: '#FFE7EB' },
-  { id: 11, name: '명함 시안 06', type: 'PNG', size: '1.7MB', updatedAt: '2026.10.19', color: '#EEE8FA' },
-  { id: 12, name: '명함 시안 07', type: 'JPG', size: '2.4MB', updatedAt: '2026.10.18', color: '#F8E8F0' }
+  { id: 1, name: '체리 명함 시안 01', type: 'AI', size: '3.2MB', uploadedAt: '2026.10.28', updatedAt: null, color: '#FFE8EF' },
+  { id: 2, name: '체리 명함 시안 02', type: 'PSD', size: '8.4MB', uploadedAt: '2026.10.20', updatedAt: '2026.10.27', color: '#FCE5F0' },
+  { id: 3, name: '체리 명함 시안 03', type: 'PNG', size: '1.8MB', uploadedAt: '2026.10.27', updatedAt: null, color: '#F7E9F2' },
+  { id: 4, name: '명함 목업 이미지', type: 'JPG', size: '2.1MB', uploadedAt: '2026.10.26', updatedAt: null, color: '#F4E9E6' },
+  { id: 5, name: '로고 버전 명함', type: 'AI', size: '4.5MB', uploadedAt: '2026.10.22', updatedAt: '2026.10.25', color: '#FBE6EE' },
+  { id: 6, name: '명함 일러스트', type: 'AI', size: '3.7MB', uploadedAt: '2026.10.24', updatedAt: null, color: '#EAF2FD' },
+  { id: 7, name: '명함 배경 패턴', type: 'PNG', size: '1.3MB', uploadedAt: '2026.10.23', updatedAt: null, color: '#F5E9FF' },
+  { id: 8, name: '행사 명함', type: 'PDF', size: '2.6MB', uploadedAt: '2026.10.22', updatedAt: null, color: '#FFF1DE' },
+  { id: 9, name: '명함 시안 04', type: 'PSD', size: '5.2MB', uploadedAt: '2026.10.18', updatedAt: '2026.10.21', color: '#E9F6EE' },
+  { id: 10, name: '명함 시안 05', type: 'AI', size: '4.1MB', uploadedAt: '2026.10.20', updatedAt: null, color: '#FFE7EB' },
+  { id: 11, name: '명함 시안 06', type: 'PNG', size: '1.7MB', uploadedAt: '2026.10.19', updatedAt: null, color: '#EEE8FA' },
+  { id: 12, name: '명함 시안 07', type: 'JPG', size: '2.4MB', uploadedAt: '2026.10.18', updatedAt: null, color: '#F8E8F0' }
 ]
 
 // 폴더 내부 기능
@@ -73,6 +87,7 @@ watch([searchQuery, () => route.params.id], () => {
 // 임시 관리자 표시 상태
 // 실제 관리자 권한은 나중에 로그인 시스템에서 확인
 const isAdmin = ref(false)
+
 </script>
 
 <template>
@@ -84,105 +99,127 @@ const isAdmin = ref(false)
       <div class="breadcrumb">
         <RouterLink to="/">홈</RouterLink>
         <span class="breadcrumb-arrow">›</span>
-        <RouterLink to="/projects">팀 폴더</RouterLink>
+        <RouterLink to="/projects">모든 폴더</RouterLink>
         <span class="breadcrumb-arrow">›</span>
         <strong>{{ folder.name }}</strong>
       </div>
 
-      
-<!-- 폴더 상단 정보 -->
-<div class="folder-header">
+      <!-- 폴더 상단 정보 -->
+      <div class="folder-header">
 
-  <!-- 왼쪽: 폴더 정보 -->
-  <div class="folder-heading-group">
-    <div
-      class="folder-icon-box"
-      :style="{ backgroundColor: folder.color }"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        width="38"
-        height="38"
-        fill="none"
-        stroke="#FF6592"
-        stroke-width="1.8"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      >
-        <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10H3V7z" />
-      </svg>
-    </div>
+        <!-- 왼쪽: 폴더 정보 -->
+        <div class="folder-heading-group">
+          <div
+            class="folder-icon-box"
+            :style="{ backgroundColor: folder.color }"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              width="38"
+              height="38"
+              fill="none"
+              stroke="#FF6592"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10H3V7z" />
+            </svg>
+          </div>
 
-    <div class="folder-heading-text">
-      <h1>{{ folder.name }}</h1>
-      <p>{{ folder.category }} · {{ files.length }}개 파일</p>
-      <p class="folder-description">
-        {{ folder.description || '디자인 자료를 모아둔 폴더입니다.' }}
-      </p>
-    </div>
-  </div>
+          <div class="folder-heading-text">
+            <h1>{{ folder.name }}</h1>
+            <p>{{ folder.category }} · {{ files.length }}개 파일</p>
+            <p class="folder-description">
+              {{ folder.description || '디자인 자료를 모아둔 폴더입니다.' }}
+            </p>
+          </div>
+        </div>
 
-  <!-- 오른쪽: 버튼 한 줄 -->
-  <div class="folder-header-actions">
+        <!-- 오른쪽: 버튼 한 줄 -->
+        <div class="folder-header-actions">
 
-    <!-- 폴더 내부 검색 -->
-    <div class="search-box">
-      <span class="search-icon">⌕</span>
-      <input
-        v-model="searchQuery"
-        type="search"
-        placeholder="이 폴더에서 검색하기..."
-      />
-    </div>
+          <!-- 폴더 내부 검색 -->
+          <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input
+              v-model="searchQuery"
+              type="search"
+              placeholder="이 폴더에서 검색하기..."
+            />
+          </div>
 
-    <!-- 갤러리 / 목록 -->
-    <div class="view-options">
-      <button
-        type="button"
-        :class="{ active: viewMode === 'gallery' }"
-        @click="viewMode = 'gallery'"
-      >
-        ▦
-      </button>
+          <!-- 갤러리 / 목록 -->
+          <div class="view-options">
+            <button
+              type="button"
+              :class="{ active: viewMode === 'gallery' }"
+              :aria-pressed="viewMode === 'gallery'"
+              aria-label="갤러리 보기"
+              title="갤러리 보기"
+              @click="viewMode = 'gallery'"
+            >
+              <img
+                :src="viewMode === 'gallery' ? galleryOn : galleryOff"
+                alt=""
+                class="view-mode-icon icon-normal"
+              />
+              <img
+                :src="galleryOn"
+                alt=""
+                class="view-mode-icon icon-hover"
+              />
+            </button>
 
-      <button
-        type="button"
-        :class="{ active: viewMode === 'list' }"
-        @click="viewMode = 'list'"
-      >
-        ☷
-      </button>
-    </div>
+            <button
+              type="button"
+              :class="{ active: viewMode === 'list' }"
+              :aria-pressed="viewMode === 'list'"
+              aria-label="목록 보기"
+              title="목록 보기"
+              @click="viewMode = 'list'"
+            >
+              <img
+                :src="viewMode === 'list' ? listOn : listOff"
+                alt=""
+                class="view-mode-icon icon-normal"
+              />
+              <img
+                :src="listOn"
+                alt=""
+                class="view-mode-icon icon-hover"
+              />
+            </button>
+          </div>
 
-    <!-- 모든 사용자에게 표시 -->
-    <button type="button" class="upload-btn">
-      <span>＋</span>
-      파일 업로드
-    </button>
+          <!-- 모든 사용자에게 표시 -->
+          <button type="button" class="upload-btn">
+            <span>＋</span>
+            파일 업로드
+          </button>
 
-    <!-- 관리자에게만 표시 -->
-    <button
-      v-if="isAdmin"
-      type="button"
-      class="folder-settings-btn"
-      title="폴더 설정"
-    >
-      ···
-    </button>
+          <!-- 관리자에게만 표시 -->
+          <button
+            v-if="isAdmin"
+            type="button"
+            class="folder-settings-btn"
+            title="폴더 설정"
+          >
+            ···
+          </button>
 
-  </div>
-</div>
-
+        </div>
+      </div>
 
       <!-- 파일 목록 -->
       <section class="file-section">
 
         <div class="section-top">
-  <div class="section-title">
-    <h2>전체 파일</h2>
-    <span class="file-count">{{ filteredFiles.length }}</span>
-  </div>
-</div>
+          <div class="section-title">
+            <h2>전체 파일</h2>
+            <span class="file-count">{{ filteredFiles.length }}</span>
+          </div>
+        </div>
 
         <!-- 파일 카드 -->
         <div
@@ -226,9 +263,29 @@ const isAdmin = ref(false)
                 {{ file.size }}
               </p>
 
-              <p class="file-date">
-                수정 {{ file.updatedAt }}
+             <div class="file-bottom">
+              <p class="flie-date">
+                <span>업로드 {{ file.uploadedAt }}</span>
+
+                <template v-if="file.updatedAt">
+                  <span class="date-divider">·</span>
+                  <span>수정 {{ file.updatedAt }}</span>
+                  </template>
               </p>
+
+              <button
+  type="button"
+  class="favorite-btn"
+  :aria-label="isFavorite(folder.id, file.id) ? '즐겨찾기 해제' : '즐겨찾기 추가'"
+  :aria-pressed="isFavorite(folder.id, file.id)"
+  @click.stop="toggleFavorite(file, folder)"
+>
+  <img
+    :src="isFavorite(folder.id, file.id) ? favoriteOn : favoriteOff"
+    alt=""
+  />
+</button>
+             </div>
             </div>
           </div>
         </div>
@@ -525,11 +582,42 @@ const isAdmin = ref(false)
   color: #8190a8;
   font-size: 13px;
   cursor: pointer;
+
+  /* SVG 아이콘 중앙 정렬 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .view-options button.active {
   background: #fff0f4;
   color: #ff366b;
+}
+
+/* 갤러리 / 목록 SVG 아이콘 */
+.view-mode-icon {
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* 기본 상태 */
+.view-options .icon-normal {
+  display: block;
+}
+
+.view-options .icon-hover {
+  display: none;
+}
+
+/* 선택하지 않은 버튼에 마우스를 올렸을 때 */
+.view-options button:not(.active):hover .icon-normal {
+  display: none;
+}
+
+.view-options button:not(.active):hover .icon-hover {
+  display: block;
 }
 
 /* 5열 카드 */
@@ -910,5 +998,52 @@ const isAdmin = ref(false)
     width: 100%;
     justify-content: flex-start;
   }
+}
+
+/* 파일 카드 하단 날짜와 즐겨찾기 */
+.file-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* 즐겨찾기 별 버튼*/
+.favorite-btn {
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.favorite-btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* 목록 보기에서도 하단 정보 정렬 유지 */
+.file-grid.list-mode .file-bottom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 날짜 텍스트 */
+.file-bottom .flie-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  color: #8994a8;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
 }
 </style>
