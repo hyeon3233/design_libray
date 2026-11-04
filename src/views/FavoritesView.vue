@@ -1,4 +1,5 @@
 
+
 <script setup>
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -19,31 +20,53 @@ import listOn from '../assets/icon/List_on.svg'
 
 const router = useRouter()
 
+// 갤러리 / 목록 보기
 const viewMode = ref('gallery')
+
+// 즐겨찾기 검색어
 const searchQuery = ref('')
 
 // 즐겨찾기 파일 검색
 const filteredFavorites = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
 
-  if (!query) return favoriteFiles.value
+  if (!query) {
+    return favoriteFiles.value
+  }
 
-  return favoriteFiles.value.filter(file =>
-    file.name.toLowerCase().includes(query) ||
-    file.folderName.toLowerCase().includes(query)
-  )
+  return favoriteFiles.value.filter(file => {
+    const searchableText = [
+      file.name,
+      file.folderName,
+      file.type,
+      ...(file.tags || [])
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return searchableText.includes(query)
+  })
 })
 
-// 원래 파일이 들어 있는 폴더로 이동
+// 파일 클릭 시 해당 폴더로 이동
 function openFolder(file) {
+  // 홈 파일에는 연결된 폴더가 없음
+  if (
+    file.folderId === 'home' ||
+    file.folderId == null
+  ) {
+    return
+  }
+
   router.push(`/folders/${file.folderId}`)
 }
 
 // 즐겨찾기 해제
 function removeFavorite(file) {
   toggleFavorite(file, {
-    id: file.folderId,
-    name: file.folderName
+    id: file.folderId ?? 'home',
+    name: file.folderName || '홈 파일'
   })
 }
 </script>
@@ -61,6 +84,7 @@ function removeFavorite(file) {
 
     <!-- 목록 상단 -->
     <div class="favorites-toolbar">
+
       <div class="section-title">
         <h2>즐겨찾기 파일</h2>
         <span class="file-count">
@@ -69,17 +93,20 @@ function removeFavorite(file) {
       </div>
 
       <div class="toolbar-actions">
+
         <!-- 파일 검색 -->
         <div class="favorite-search">
           <input
             v-model="searchQuery"
             type="search"
             placeholder="즐겨찾기 파일 검색..."
+            aria-label="즐겨찾기 파일 검색"
           />
         </div>
 
         <!-- 갤러리 / 목록 보기 -->
         <div class="view-options">
+
           <button
             type="button"
             :class="{ active: viewMode === 'gallery' }"
@@ -120,6 +147,7 @@ function removeFavorite(file) {
             />
           </button>
         </div>
+
       </div>
     </div>
 
@@ -134,13 +162,26 @@ function removeFavorite(file) {
         :key="`${file.folderId}-${file.id}`"
         class="file-card"
       >
-        <!-- 파일 썸네일 -->
+
+        <!-- 썸네일 -->
         <div
           class="file-thumbnail"
-          :style="{ backgroundColor: file.color || '#FFE8EF' }"
+          :style="{
+            backgroundColor: file.color || '#FFE8EF'
+          }"
           @click="openFolder(file)"
         >
-          <div class="thumbnail-design">
+
+          <!-- 실제 파일 이미지 -->
+          <img
+            v-if="file.thumbnail"
+            :src="file.thumbnail"
+            :alt="file.name"
+            class="preview-image"
+          />
+
+          <!-- 이미지가 없는 파일 -->
+          <div v-else class="thumbnail-design">
             <span class="thumbnail-cherry">● ●</span>
             <span class="thumbnail-title">CHERRY</span>
             <span class="thumbnail-caption">
@@ -163,17 +204,22 @@ function removeFavorite(file) {
             >
               {{ file.name }}
             </h3>
+
             <span class="file-more">···</span>
           </div>
 
+          <!-- 확장자 및 용량 -->
           <p class="file-meta">
             {{ file.type }}
-            <span>·</span>
-            {{ file.size }}
+
+            <template v-if="file.size">
+              · {{ file.size }}
+            </template>
           </p>
 
-          <!-- 업로드 / 수정 날짜 + 즐겨찾기 -->
+          <!-- 업로드 날짜 + 즐겨찾기 -->
           <div class="file-bottom">
+
             <p class="file-date">
               <span v-if="file.uploadedAt">
                 업로드 {{ file.uploadedAt }}
@@ -190,33 +236,52 @@ function removeFavorite(file) {
               </template>
             </p>
 
+            <!-- 즐겨찾기 해제 -->
             <button
               type="button"
               class="favorite-btn"
-              aria-label="즐겨찾기 해제"
-              :aria-pressed="isFavorite(file.folderId, file.id)"
+              :aria-label="
+                isFavorite(file.folderId, file.id)
+                  ? '즐겨찾기 해제'
+                  : '즐겨찾기 추가'
+              "
+              :aria-pressed="
+                isFavorite(file.folderId, file.id)
+              "
               @click.stop="removeFavorite(file)"
             >
               <img
-                :src="isFavorite(file.folderId, file.id) ? favoriteOn : favoriteOff"
+                :src="
+                  isFavorite(file.folderId, file.id)
+                    ? favoriteOn
+                    : favoriteOff
+                "
                 alt=""
               />
             </button>
+
           </div>
 
+          <!-- 원본 폴더명 -->
           <p class="folder-label">
-            {{ file.folderName }}
+            {{ file.folderName || '홈 파일' }}
           </p>
+
         </div>
       </div>
     </div>
 
-    <!-- 빈 화면 -->
+    <!-- 즐겨찾기 파일이 없을 때 -->
     <div v-else class="empty-state">
+
       <div class="empty-icon">☆</div>
 
       <h3>
-        {{ searchQuery ? '검색 결과가 없어요.' : '아직 즐겨찾기한 파일이 없어요.' }}
+        {{
+          searchQuery
+            ? '검색 결과가 없어요.'
+            : '아직 즐겨찾기한 파일이 없어요.'
+        }}
       </h3>
 
       <p>
@@ -226,10 +291,12 @@ function removeFavorite(file) {
             : '파일 카드의 별을 누르면 이곳에 표시돼요.'
         }}
       </p>
+
     </div>
 
   </div>
 </template>
+
 
 <style scoped>
 .favorites-page {
@@ -624,5 +691,13 @@ function removeFavorite(file) {
     flex-wrap: wrap;
     gap: 10px;
   }
+}
+
+/* 실제 파일 썸네일 */
+.preview-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 </style>

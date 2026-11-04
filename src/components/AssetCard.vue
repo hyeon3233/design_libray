@@ -1,5 +1,20 @@
+
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+import {
+  isFavorite,
+  toggleFavorite
+} from '../stores/favorites'
+
+import favoriteOff from '../assets/icon/Favorit_off.svg'
+import favoriteOn from '../assets/icon/Favorit_on.svg'
+
+const props = defineProps({
+  file: {
+    type: Object,
+    required: true
+  },
   title: String,
   thumbnail: String,
   tags: {
@@ -12,11 +27,33 @@ defineProps({
     default: '나'
   }
 })
+
+// 파일의 즐겨찾기 식별자
+const favoriteFolderId = computed(() =>
+  props.file.folderId ?? 'home'
+)
+
+// 현재 즐겨찾기 상태
+const isFileFavorite = computed(() =>
+  isFavorite(
+    favoriteFolderId.value,
+    props.file.id
+  )
+)
+
+// 즐겨찾기 추가 / 해제
+function handleFavorite() {
+  toggleFavorite(props.file, {
+    id: favoriteFolderId.value,
+    name: '홈 파일'
+  })
+}
 </script>
 
 <template>
   <article class="asset-card">
-    <!-- 이미지 미리보기 -->
+
+    <!-- 파일 썸네일 -->
     <div class="asset-thumbnail">
       <img
         v-if="thumbnail"
@@ -29,7 +66,10 @@ defineProps({
     <!-- 파일 이름 -->
     <div class="asset-title">
       <h3>{{ title }}</h3>
-      <button type="button" class="more-btn">⋯</button>
+
+      <button type="button" class="more-btn">
+        ⋯
+      </button>
     </div>
 
     <!-- 태그 -->
@@ -43,15 +83,42 @@ defineProps({
       </span>
     </div>
 
-    <!-- 업로드한 디자이너 / 수정일 -->
-        <div class="asset-bottom">
-     <div class="author">
-      <span class="avatar">C</span>
-     <span>{{ author }}</span>
+    <!-- 작성자 / 날짜 / 즐겨찾기 -->
+    <div class="asset-bottom">
+
+      <div class="author">
+        <span class="avatar">C</span>
+        <span>{{ author }}</span>
+      </div>
+
+      <div class="asset-actions">
+        <span>{{ updatedAt }}</span>
+
+        <!-- 파일 즐겨찾기 -->
+        <button
+          type="button"
+          class="favorite-btn"
+          :aria-label="
+            isFileFavorite
+              ? '즐겨찾기 해제'
+              : '즐겨찾기 추가'
+          "
+          :aria-pressed="isFileFavorite"
+          @click.stop="handleFavorite"
+        >
+          <img
+            :src="
+              isFileFavorite
+                ? favoriteOn
+                : favoriteOff
+            "
+            alt=""
+          />
+        </button>
+      </div>
+
     </div>
 
-    <span>{{ updatedAt }}</span>
-</div>
   </article>
 </template>
 
@@ -128,9 +195,9 @@ defineProps({
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  margin-top: 10px;
-  font-size: 13px;
-  color: #8c9ab4;
+  margin-top: 12px;
+  color: #8491a8;
+  font-size: 12px;
 }
 
 .author {
@@ -140,22 +207,41 @@ defineProps({
 }
 
 .avatar {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: #8952d7;
+  background: #8b46d8;
   color: white;
   font-size: 10px;
   font-weight: 700;
 }
 
-.asset-date {
-  font-size: 13px;
-  font-weight: 500;
-  color: #7b89a5;
-  white-space: nowrap;
+/* 날짜 및 즐겨찾기 */
+.asset-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.favorite-btn {
+  width: 26px;
+  height: 26px;
+  padding: 3px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.favorite-btn img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 </style>

@@ -1,29 +1,20 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { folderList } from '../stores/folders'
 import { useRouter } from 'vue-router'
+
+import { folderList } from '../stores/folders'
+import { searchQuery } from '../stores/search'
+import { homeRecentAssets, searchFiles } from '../stores/files'
 
 import FolderCard from '../components/FolderCard.vue'
 import AssetCard from '../components/AssetCard.vue'
-
-import sharedImg from '../assets/folders/shared.png'
-import businessCardImg from '../assets/folders/business-card.png'
-import appstoreImg from '../assets/folders/appstore.png'
-import cherryQrImg from '../assets/folders/cherry-qr.png'
-import cherryDesignImg from '../assets/folders/cherry-design.png'
-
-import posterImg from '../assets/recent/poster.png'
-import recentBusinessImg from '../assets/recent/business-card.png'
-import recentAppstoreImg from '../assets/recent/appstore.png'
-import bannerImg from '../assets/recent/banner.png'
-import goodsImg from '../assets/recent/goods.png'
-import snsImg from '../assets/recent/sns.png'
+import ArchiveFileCard from '../components/ArchiveFileCard.vue'
+import CreateFolderModal from '../components/CreateFolderModal.vue'
 
 import chevronRight from '../assets/icon/chevron_1.svg'
 import chevronRightOn from '../assets/icon/chevron_1_on.svg'
 
-// 갤러리 / 목록 보기 SVG 아이콘
 import galleryOff from '../assets/icon/gallery_off.svg'
 import galleryOn from '../assets/icon/gallery_on.svg'
 import listOff from '../assets/icon/List_off.svg'
@@ -31,24 +22,25 @@ import listOn from '../assets/icon/List_on.svg'
 
 const router = useRouter()
 
+// 폴더 상세 페이지 이동
 function openFolder(folder) {
   router.push(`/folders/${folder.id}`)
 }
 
-// 보기 방식
+// 갤러리 / 목록 보기
 const viewMode = ref('gallery')
 
 function changeViewMode(mode) {
   viewMode.value = mode
 }
 
-// 새 폴더 팝업
+// 새 폴더 만들기
 const showFolderModal = ref(false)
 const newFolderName = ref('')
 const newFolderCategory = ref('포토 프레임')
 const folderError = ref('')
 
-// 폴더 색상 5가지
+// 폴더 색상
 const folderColors = [
   { name: '블루', value: '#E9F2FF' },
   { name: '핑크', value: '#FFE9F0' },
@@ -57,11 +49,10 @@ const folderColors = [
   { name: '퍼플', value: '#F1EAFF' }
 ]
 
-// 선택한 색상 및 썸네일
 const newFolderColor = ref('#E9F2FF')
 const newFolderThumbnail = ref('')
 
-// 썸네일 이미지 업로드
+// 폴더 썸네일 업로드
 function uploadFolderThumbnail(event) {
   const file = event.target.files?.[0]
   if (!file) return
@@ -87,12 +78,12 @@ function uploadFolderThumbnail(event) {
   reader.readAsDataURL(file)
 }
 
-// 선택한 썸네일 삭제
+// 폴더 썸네일 삭제
 function removeFolderThumbnail() {
   newFolderThumbnail.value = ''
 }
 
-// 폴더 생성하기
+// 폴더 생성
 function createFolder() {
   const name = newFolderName.value.trim()
 
@@ -112,7 +103,7 @@ function createFolder() {
 
   folderList.value.push({
     id: Date.now(),
-    name: name,
+    name,
     category: newFolderCategory.value,
     fileCount: 0,
     updatedAt: today,
@@ -120,7 +111,6 @@ function createFolder() {
     thumbnail: newFolderThumbnail.value
   })
 
-  // 입력값 초기화
   newFolderName.value = ''
   newFolderCategory.value = '포토 프레임'
   newFolderColor.value = '#E9F2FF'
@@ -150,53 +140,7 @@ function selectCategory(category) {
   selectedCategory.value = category
 }
 
-// 최근 업로드 파일
-const recentAssets = [
-  {
-    id: 1,
-    title: '브랜드 포스터',
-    thumbnail: posterImg,
-    tags: ['포스터', '브랜딩'],
-    updatedAt: '2026.10.27'
-  },
-  {
-    id: 2,
-    title: '명함 디자인',
-    thumbnail: recentBusinessImg,
-    tags: ['명함', '인쇄물'],
-    updatedAt: '2026.10.26'
-  },
-  {
-    id: 3,
-    title: '앱스토어 이미지',
-    thumbnail: recentAppstoreImg,
-    tags: ['GUI·UI'],
-    updatedAt: '2026.10.25'
-  },
-  {
-    id: 4,
-    title: '프로모션 배너',
-    thumbnail: bannerImg,
-    tags: ['배너', '홍보물'],
-    updatedAt: '2026.10.24'
-  },
-  {
-    id: 5,
-    title: '굿즈 디자인',
-    thumbnail: goodsImg,
-    tags: ['굿즈'],
-    updatedAt: '2026.10.23'
-  },
-  {
-    id: 6,
-    title: 'SNS 카드뉴스',
-    thumbnail: snsImg,
-    tags: ['SNS', '카드뉴스'],
-    updatedAt: '2026.10.22'
-  }
-]
-
-// 카테고리 이름 통일
+// 카테고리별 검색 키워드
 const categoryAliases = {
   '포토 프레임': ['포토 프레임', '포토프레임'],
   'GUI·UI': ['GUI·UI', 'GUI', 'UI'],
@@ -210,30 +154,49 @@ const categoryAliases = {
   '기타': ['기타']
 }
 
-// 선택한 카테고리의 폴더만 표시
+// 폴더 필터 및 검색
 const filteredFolders = computed(() => {
-  if (selectedCategory.value === '전체') {
-    return folderList.value
-  }
+  const query = searchQuery.value.trim().toLowerCase()
 
-  const keywords = categoryAliases[selectedCategory.value] || []
+  return folderList.value.filter(folder => {
+    const keywords =
+      categoryAliases[selectedCategory.value] || []
 
-  return folderList.value.filter(folder =>
-    keywords.includes(folder.category)
-  )
+    const categoryMatch =
+      selectedCategory.value === '전체' ||
+      keywords.includes(folder.category)
+
+    const searchMatch =
+      !query ||
+      [folder.name, folder.category].some(value =>
+        String(value ?? '').toLowerCase().includes(query)
+      )
+
+    return categoryMatch && searchMatch
+  })
 })
 
-// 선택한 카테고리의 파일만 표시
+// 파일 필터 및 전체 검색
 const filteredAssets = computed(() => {
-  if (selectedCategory.value === '전체') {
-    return recentAssets
+  const query = searchQuery.value.trim()
+
+  // 검색 중에는 모든 폴더의 파일 검색
+  if (query) {
+    return searchFiles(query)
   }
 
-  const keywords = categoryAliases[selectedCategory.value] || []
+  // 평소 홈에서는 기존 파일 6개 표시
+  const keywords =
+    categoryAliases[selectedCategory.value] || []
 
-  return recentAssets.filter(asset =>
-    asset.tags.some(tag => keywords.includes(tag))
-  )
+  return homeRecentAssets
+    .filter(asset =>
+      selectedCategory.value === '전체' ||
+      (asset.tags || []).some(tag =>
+        keywords.includes(tag)
+      )
+    )
+    .slice(0, 6)
 })
 </script>
 
@@ -274,7 +237,7 @@ const filteredAssets = computed(() => {
         </button>
       </div>
 
-      <!-- 보기 방식 -->
+      <!-- 갤러리 / 목록 보기 -->
       <div class="view-options">
         <button
           type="button"
@@ -329,7 +292,7 @@ const filteredAssets = computed(() => {
           <p>디자인팀에서 공유하는 폴더를 확인해보세요.</p>
         </div>
 
-        <RouterLink to="/categories" class="view-all">
+        <RouterLink to="/allfolders" class="view-all">
           전체보기
           <img
             :src="chevronRight"
@@ -360,19 +323,34 @@ const filteredAssets = computed(() => {
           @click="openFolder(folder)"
         />
       </div>
+
+      <p
+        v-if="filteredFolders.length === 0"
+        class="empty-search"
+      >
+        일치하는 폴더가 없습니다.
+      </p>
     </section>
 
-    <!-- 최근 업로드 파일 -->
+    <!-- 최근 업로드 파일 / 전체 검색 결과 -->
     <section class="recent-assets">
       <div class="section-heading">
         <h2 class="asset-heading">
-          🕒 최근 업로드 파일
+          {{
+            searchQuery.trim()
+              ? '🔍 전체 파일 검색 결과'
+              : '🕒 최근 업로드 파일'
+          }}
+
           <span class="folder-count">
             {{ filteredAssets.length }}
           </span>
         </h2>
 
-        <RouterLink to="/projects" class="view-all">
+        <RouterLink
+          :to="searchQuery.trim() ? '/allfiles' : '/recentfiles'"
+          class="view-all"
+        >
           전체보기
           <img
             :src="chevronRight"
@@ -391,164 +369,42 @@ const filteredAssets = computed(() => {
         class="asset-grid"
         :class="{ 'list-mode': viewMode === 'list' }"
       >
-        <AssetCard
-          v-for="asset in filteredAssets"
-          :key="asset.id"
-          :title="asset.title"
-          :thumbnail="asset.thumbnail"
-          :tags="asset.tags"
-          :updated-at="asset.updatedAt"
-        />
-      </div>
-    </section>
+        <!-- 검색 전: 기존 홈 카드 6개 -->
+        <template v-if="!searchQuery.trim()">
+          <AssetCard
+  v-for="asset in filteredAssets"
+  :key="asset.id"
+  :file="asset"
+  :title="asset.name"
+  :thumbnail="asset.thumbnail"
+  :tags="asset.tags"
+  :updated-at="asset.uploadedAt"
+/>
+        </template>
 
-    <!-- 새 폴더 만들기 팝업 -->
-    <div
-      v-if="showFolderModal"
-      class="modal-overlay"
-      @click.self="showFolderModal = false"
-    >
-      <div
-        class="folder-modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="folder-modal-title"
-      >
-
-        <!-- 팝업 상단 -->
-        <div class="modal-header">
-          <div>
-            <h2 id="folder-modal-title">새 폴더 만들기</h2>
-            <p>디자인 자료를 정리할 새 폴더를 만들어보세요.</p>
-          </div>
-
-          <button
-            type="button"
-            class="modal-close"
-            aria-label="닫기"
-            @click="showFolderModal = false"
-          >
-            ×
-          </button>
-        </div>
-
-        <!-- 폴더 이름 -->
-        <div class="modal-field">
-          <label for="folder-name">폴더 이름</label>
-
-          <input
-            id="folder-name"
-            v-model="newFolderName"
-            type="text"
-            placeholder="예: 2026 포토프레임"
-            maxlength="50"
-            @input="folderError = ''"
+        <!-- 검색 중: 전체 파일 검색 결과 -->
+        <template v-else>
+          <ArchiveFileCard
+            v-for="asset in filteredAssets"
+            :key="`${asset.folderId ?? 'home'}-${asset.id}`"
+            :file="asset"
           />
-
-          <p v-if="folderError" class="folder-error">
-            {{ folderError }}
-          </p>
-        </div>
-
-        <!-- 카테고리 -->
-        <div class="modal-field">
-          <label for="folder-category">카테고리</label>
-
-          <select
-            id="folder-category"
-            v-model="newFolderCategory"
-          >
-            <option
-              v-for="category in categories.filter(c => c !== '전체')"
-              :key="category"
-              :value="category"
-            >
-              {{ category }}
-            </option>
-          </select>
-        </div>
-
-        <!-- 폴더 색상 -->
-        <div class="modal-field">
-          <label>폴더 색상</label>
-
-          <div class="folder-color-options">
-            <button
-              v-for="color in folderColors"
-              :key="color.value"
-              type="button"
-              class="folder-color-option"
-              :class="{ selected: newFolderColor === color.value }"
-              :style="{ backgroundColor: color.value }"
-              :title="color.name"
-              :aria-label="color.name"
-              :aria-pressed="newFolderColor === color.value"
-              @click="newFolderColor = color.value"
-            >
-              <span v-if="newFolderColor === color.value">✓</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 썸네일 선택 -->
-        <div class="modal-field">
-          <label>폴더 썸네일</label>
-
-          <div class="thumbnail-upload">
-            <img
-              v-if="newFolderThumbnail"
-              :src="newFolderThumbnail"
-              class="thumbnail-preview"
-              alt="선택한 폴더 썸네일"
-            />
-
-            <div v-else class="thumbnail-placeholder">
-              <span class="upload-icon">＋</span>
-              <span>대표 이미지 선택</span>
-              <small>PNG, JPG, WEBP · 최대 5MB</small>
-            </div>
-
-            <label class="thumbnail-upload-button">
-              이미지 선택
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                @change="uploadFolderThumbnail"
-              />
-            </label>
-
-            <button
-              v-if="newFolderThumbnail"
-              type="button"
-              class="thumbnail-remove"
-              @click="removeFolderThumbnail"
-            >
-              이미지 삭제
-            </button>
-          </div>
-        </div>
-
-        <!-- 하단 버튼 -->
-        <div class="modal-actions">
-          <button
-            type="button"
-            class="cancel-btn"
-            @click="showFolderModal = false"
-          >
-            취소
-          </button>
-
-          <button
-            type="button"
-            class="create-btn"
-            @click="createFolder"
-          >
-            폴더 생성
-          </button>
-        </div>
-
+        </template>
       </div>
-    </div>
+
+      <p
+        v-if="filteredAssets.length === 0"
+        class="empty-search"
+      >
+        일치하는 파일이 없습니다.
+      </p>
+    </section>
+    
+<!-- 새 폴더 만들기 팝업 -->
+<CreateFolderModal
+  v-if="showFolderModal"
+  @close="showFolderModal = false"
+/>
 
   </div>
 </template>
@@ -558,6 +414,7 @@ const filteredAssets = computed(() => {
   width: 100%;
 }
 
+/* 페이지 상단 */
 .home-heading {
   display: flex;
   justify-content: space-between;
@@ -599,6 +456,7 @@ const filteredAssets = computed(() => {
   margin-right: 8px;
 }
 
+/* 카테고리 */
 .category-bar {
   display: flex;
   justify-content: space-between;
@@ -630,6 +488,7 @@ const filteredAssets = computed(() => {
   border-color: #ff4b7b;
 }
 
+/* 갤러리 / 목록 보기 */
 .view-options {
   display: flex;
   gap: 5px;
@@ -646,15 +505,12 @@ const filteredAssets = computed(() => {
   border-radius: 9px;
   color: #7d89a2;
   cursor: pointer;
-
-  /* SVG 아이콘과 글씨 정렬 */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
 }
 
-/* 마우스 호버 시 글씨 색상 */
 .view-options button:hover {
   color: #ff376b;
 }
@@ -664,7 +520,6 @@ const filteredAssets = computed(() => {
   color: #ff376b;
 }
 
-/* 갤러리 / 목록 아이콘 */
 .view-mode-icon {
   width: 17px;
   height: 17px;
@@ -672,7 +527,6 @@ const filteredAssets = computed(() => {
   flex-shrink: 0;
 }
 
-/* 기본 아이콘 표시 */
 .view-options .icon-normal {
   display: block;
 }
@@ -681,7 +535,6 @@ const filteredAssets = computed(() => {
   display: none;
 }
 
-/* 선택되지 않은 버튼에 마우스를 올렸을 때 */
 .view-options button:not(.view-active):hover .icon-normal {
   display: none;
 }
@@ -750,14 +603,12 @@ const filteredAssets = computed(() => {
   }
 }
 
-/* 팀 폴더 제목 */
 .folder-heading {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* 폴더 개수 배지 */
 .folder-count {
   display: inline-flex;
   align-items: center;
@@ -805,10 +656,7 @@ const filteredAssets = computed(() => {
   }
 }
 
-/* ============================ */
-/* 목록 보기 스타일 */
-/* ============================ */
-
+/* 목록 보기 */
 .folder-grid.list-mode,
 .asset-grid.list-mode {
   display: flex;
@@ -816,7 +664,7 @@ const filteredAssets = computed(() => {
   gap: 10px;
 }
 
-/* 팀 폴더 목록 형태 */
+/* 팀 폴더 목록 */
 .folder-grid.list-mode :deep(.folder-card) {
   display: flex;
   align-items: center;
@@ -845,7 +693,7 @@ const filteredAssets = computed(() => {
   padding: 12px 20px;
 }
 
-/* 최근 업로드 파일 목록 형태 */
+/* 홈 기본 파일 목록 */
 .asset-grid.list-mode :deep(.asset-card) {
   display: flex;
   align-items: center;
@@ -878,11 +726,25 @@ const filteredAssets = computed(() => {
   margin-top: 0;
 }
 
-/* ============================ */
-/* 새 폴더 만들기 팝업 */
-/* ============================ */
+/* 전체 검색 결과 목록 */
+.asset-grid.list-mode :deep(.file-card) {
+  display: flex;
+  align-items: center;
+}
 
-/* 팝업 뒷배경 */
+.asset-grid.list-mode :deep(.file-thumbnail) {
+  width: 150px;
+  height: 100px;
+  flex-shrink: 0;
+  aspect-ratio: auto;
+}
+
+.asset-grid.list-mode :deep(.file-card-content) {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 새 폴더 만들기 팝업 */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -895,7 +757,6 @@ const filteredAssets = computed(() => {
   padding: 20px;
 }
 
-/* 팝업 흰색 박스 */
 .folder-modal {
   width: 440px;
   max-width: 100%;
@@ -906,7 +767,6 @@ const filteredAssets = computed(() => {
   box-shadow: 0 20px 60px rgba(30, 40, 65, 0.15);
 }
 
-/* 팝업 상단 */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -929,7 +789,6 @@ const filteredAssets = computed(() => {
   margin: 0;
 }
 
-/* 팝업 닫기 버튼 */
 .modal-close {
   flex-shrink: 0;
   border: none;
@@ -942,7 +801,7 @@ const filteredAssets = computed(() => {
   cursor: pointer;
 }
 
-/* 입력 영역 */
+/* 폴더 입력 */
 .modal-field {
   display: flex;
   flex-direction: column;
@@ -976,7 +835,6 @@ const filteredAssets = computed(() => {
   box-shadow: 0 0 0 3px #fff0f4;
 }
 
-/* 하단 버튼 */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -1011,14 +869,13 @@ const filteredAssets = computed(() => {
   background: #ed275b;
 }
 
-/* 폴더 이름 입력 오류 */
 .folder-error {
   color: #ff366b;
   font-size: 12px;
   margin: 0;
 }
 
-/* 폴더 색상 선택 */
+/* 폴더 색상 */
 .folder-color-options {
   display: flex;
   gap: 12px;
@@ -1116,20 +973,18 @@ const filteredAssets = computed(() => {
   cursor: pointer;
 }
 
-/* 팝업 높이가 길어질 때 스크롤 */
 .folder-modal {
   max-height: calc(100vh - 40px);
   overflow-y: auto;
 }
 
-/* 전체보기 텍스트와 화살표 정렬 */
+/* 전체보기 텍스트 / 화살표 */
 .view-all {
   display: inline-flex;
   align-items: center;
   gap: 5px;
 }
 
-/* 전체보기 화살표 */
 .view-all-icon {
   width: 14px;
   height: 14px;
@@ -1137,7 +992,6 @@ const filteredAssets = computed(() => {
   flex-shrink: 0;
 }
 
-/* 기본 상태: 회색 SVG 표시 */
 .view-all .icon-off {
   display: inline-block;
 }
@@ -1146,12 +1000,19 @@ const filteredAssets = computed(() => {
   display: none;
 }
 
-/* 마우스를 올렸을 때: 핑크 SVG 표시 */
 .view-all:hover .icon-off {
   display: none;
 }
 
 .view-all:hover .icon-on {
   display: inline-block;
+}
+
+/* 검색 결과 없음 */
+.empty-search {
+  padding: 40px 20px;
+  text-align: center;
+  color: #8994a8;
+  font-size: 14px;
 }
 </style>

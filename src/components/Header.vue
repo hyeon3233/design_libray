@@ -1,10 +1,19 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { searchQuery } from '../stores/search'
 
 // 로그인 기능 연결 전 임시 사용자 정보
 const profileImage = ref('')
 const userNickname = ref('체리 디자인팀')
+const router = useRouter()
+
+function handleSearch() {
+  if (router.currentRoute.value.path !== '/') {
+    router.push('/')
+  }
+}
 
 // 추후 로그인 기능 연결 시
 // 로그인한 사용자의 프로필 사진과 닉네임을 불러올 예정
@@ -21,18 +30,21 @@ import chevronDownOn from '../assets/icon/chevron_2_on.svg'
   <header class="top-header">
 
     <!-- 왼쪽 검색창 -->
-    <div class="search-box">
-      <img
-        :src="searchIcon"
-        alt=""
-        class="search-icon"
-      />
+<div class="search-box">
+  <img
+    :src="searchIcon"
+    alt=""
+    class="search-icon"
+  />
 
-      <input
-        type="text"
-        placeholder="파일명, 태그, 프로젝트를 검색해 보세요."
-      />
-    </div>
+  <input
+    v-model="searchQuery"
+    type="search"
+    aria-label="디자인 자료 검색"
+    placeholder="파일명, 태그, 프로젝트를 검색해 보세요."
+    @input="handleSearch"
+  />
+</div>
 
     <!-- 오른쪽 버튼 그룹 -->
     <div class="header-actions">

@@ -9,14 +9,16 @@ import logoImg from '../assets/logo.png'
 import homeOff from '../assets/icon/Home_off.svg'
 import favoriteOff from '../assets/icon/Favorit_off.svg'
 import folderOff from '../assets/icon/Folder_off.svg'
-import categoryOff from '../assets/icon/Categori_off.svg'
+import stackOff from '../assets/icon/stack_off.svg'
+import clockIconOff from '../assets/icon/clock.svg'
 import trashOff from '../assets/icon/Trash_off.svg'
 
 // 피그마 SVG 아이콘 - 선택 상태
 import homeOn from '../assets/icon/Home_on.svg'
 import favoriteOn from '../assets/icon/Favorit_on.svg'
 import folderOn from '../assets/icon/Folder_on.svg'
-import categoryOn from '../assets/icon/Categori_on.svg'
+import stackOn from '../assets/icon/stack_on.svg'
+import clockIconOn from '../assets/icon/clock_on.svg'
 import trashOn from '../assets/icon/Trash_on.svg'
 
 const route = useRoute()
@@ -29,15 +31,20 @@ const isFavoriteActive = computed(() =>
 )
 
 const isProjectActive = computed(() =>
-  route.path === '/projects' || route.path.startsWith('/folders/')
+  route.path === '/allfolders' || route.path.startsWith('/folders/')
 )
 
-const isCategoryActive = computed(() =>
-  route.path.startsWith('/categories')
-)
 
 const isTrashActive = computed(() =>
   route.path.startsWith('/trash')
+)
+
+const isAllFilesActive = computed(() =>
+  route.path === '/allfiles'
+)
+
+const isRecentFilesActive = computed(() =>
+  route.path === '/recentfiles'
 )
 </script>
 
@@ -75,29 +82,46 @@ const isTrashActive = computed(() =>
         />
         <span>즐겨찾기</span>
       </RouterLink>
+      
+<!-- 모든 폴더 -->
+<RouterLink
+  to="/allfolders"
+  :class="{ 'router-link-active': isProjectActive }"
+>
+  <img
+  :src="isProjectActive ? folderOn : folderOff"
+  class="nav-icon"
+  alt=""
+/>
+  <span>모든 폴더</span>
+</RouterLink>
 
-      <!-- 모든 폴더 -->
-      <RouterLink
-        to="/projects"
-        :class="{ 'router-link-active': isProjectActive }"
-      >
-        <img
-          :src="isProjectActive ? folderOn : folderOff"
-          class="nav-icon"
-          alt=""
-        />
-        <span>모든 폴더</span>
-      </RouterLink>
+<!-- 모든 파일 -->
+<RouterLink
+  to="/allfiles"
+  :class="{ 'router-link-active': isAllFilesActive }"
+>
+  <img
+    :src="isAllFilesActive ? stackOn : stackOff"
+    class="nav-icon"
+    alt=""
+  />
+  <span>모든 파일</span>
+</RouterLink>
 
-      <!-- 카테고리 -->
-      <RouterLink to="/categories">
-        <img
-          :src="isCategoryActive ? categoryOn : categoryOff"
-          class="nav-icon"
-          alt=""
-        />
-        <span>카테고리</span>
-      </RouterLink>
+<!-- 최근 업로드 파일 -->
+<RouterLink
+  to="/recentfiles"
+  :class="{ 'router-link-active': isRecentFilesActive }"
+>
+  <img
+    :src="isRecentFilesActive ? clockIconOn : clockIconOff"
+    class="nav-icon"
+    alt=""
+  />
+  <span>최근 업로드 파일</span>
+</RouterLink>
+
 
       <!-- 구분선 -->
       <div class="menu-divider"></div>
