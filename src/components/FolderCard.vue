@@ -1,6 +1,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import ItemActionMenu from './ItemActionMenu.vue'
 
 // 카드마다 고유한 그라데이션 ID 생성
 const gradientId = ref(
@@ -13,17 +14,57 @@ const props = defineProps({
   category: String,
   fileCount: Number,
   updatedAt: String,
+
   thumbnail: {
     type: String,
     default: ''
   },
+
   color: {
     type: String,
     default: '#E9F2FF'
+  },
+
+  // 폴더 전체 데이터
+  folder: {
+    type: Object,
+    default: null
+  },
+
+  // 현재 로그인 사용자 ID
+  currentUserId: {
+    type: [String, Number],
+    default: null
+  },
+
+  // 관리자 여부
+  isAdmin: {
+    type: Boolean,
+    default: false
   }
 })
 
-// 폴더별 색상 설정
+// 부모 화면으로 관리 메뉴 이벤트 전달
+const emit = defineEmits([
+  'edit',
+  'move',
+  'favorite',
+  'delete'
+])
+
+// ItemActionMenu에 전달할 폴더 데이터
+const folderItem = computed(() => {
+  return props.folder || {
+    name: props.name,
+    category: props.category,
+    fileCount: props.fileCount,
+    updatedAt: props.updatedAt,
+    thumbnail: props.thumbnail,
+    color: props.color
+  }
+})
+
+// 폴더별 색상 설정 (기존 유지)
 const folderColor = computed(() => {
   const colors = {
     '#E9F2FF': ['#80C9FF', '#42A9F5'],
@@ -63,6 +104,7 @@ const folderColor = computed(() => {
               offset="0%"
               :stop-color="folderColor[0]"
             />
+
             <stop
               offset="100%"
               :stop-color="folderColor[1]"
@@ -83,28 +125,32 @@ const folderColor = computed(() => {
           opacity="0.9"
         />
       </svg>
+
       <img
         v-if="thumbnail"
         :src="thumbnail"
-        alt="`${name} 디자인 미리보기`"
+        :alt="`${name} 디자인 미리보기`"
         class="folder-preview"
-        />
+      />
     </div>
 
     <!-- 폴더 정보 -->
     <div class="folder-info">
 
-      <!-- 폴더 이름 및 더보기 -->
+      <!-- 폴더 이름 및 관리 메뉴 -->
       <div class="folder-title-row">
         <h3>{{ name }}</h3>
 
-        <button
-          class="more-btn"
-          type="button"
-          :aria-label="`${name} 메뉴`"
-        >
-          ⋯
-        </button>
+        <ItemActionMenu
+          type="folder"
+          :item="folderItem"
+          :current-user-id="currentUserId"
+          :is-admin="isAdmin"
+          @edit="emit('edit', $event)"
+          @move="emit('move', $event)"
+          @favorite="emit('favorite', $event)"
+          @delete="emit('delete', $event)"
+        />
       </div>
 
       <!-- 카테고리 태그 -->
@@ -114,7 +160,7 @@ const folderColor = computed(() => {
 
       <!-- 파일 개수 및 수정일 -->
       <div class="folder-bottom">
-        <span>{{ fileCount }}개 파일</span>
+        <span>{{ fileCount ?? 0 }}개 파일</span>
         <span>{{ updatedAt }}</span>
       </div>
 
@@ -129,8 +175,13 @@ const folderColor = computed(() => {
   background: #ffffff;
   border: 1px solid #edf0f5;
   border-radius: 14px;
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+
+  /* 드롭다운 메뉴가 잘리지 않도록 */
+  overflow: visible;
+
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .folder-card:hover {
@@ -144,15 +195,29 @@ const folderColor = computed(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 10px;
+  padding: 12px;
+
+  /* 둥근 모서리 유지 */
+  border-radius: 13px 13px 0 0;
+  overflow: hidden;
 }
 
 /* 컬러 폴더 아이콘 */
 .folder-icon {
-  width: 90px;
+  width: 38%;
   height: 80px;
+  flex-shrink: 0;
   filter: drop-shadow(
     0 5px 5px rgba(0, 0, 0, 0.08)
   );
+}
+
+.folder-preview {
+  width: 58%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 /* 폴더 정보 */
@@ -160,7 +225,7 @@ const folderColor = computed(() => {
   padding: 15px;
 }
 
-/* 제목 영역 */
+/* 폴더 이름 및 관리 메뉴 */
 .folder-title-row {
   display: flex;
   align-items: center;
@@ -177,20 +242,6 @@ const folderColor = computed(() => {
   word-break: keep-all;
   overflow-wrap: break-word;
   line-height: 1.5;
-}
-
-/* 더보기 버튼 */
-.more-btn {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  color: #a0a8b8;
-  font-size: 22px;
-  cursor: pointer;
-}
-
-.more-btn:hover {
-  color: #ff366b;
 }
 
 /* 카테고리 태그 */
@@ -213,24 +264,5 @@ const folderColor = computed(() => {
   gap: 6px;
   font-size: 13px;
   color: #a2aaba;
-}
-
-.folder-thumbnail {
-  gap: 10px;
-  padding: 12px;
-  overflow: hidden;
-}
-
-.folder-icon {
-  width: 38%;
-  height: 80px;
-  flex-shrink: 0;
-}
-
-.folder-preview {
-  width: 58%;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
 }
 </style>

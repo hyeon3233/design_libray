@@ -92,7 +92,6 @@ const businessCardFiles = [
 
 // 전체 파일
 
-
 // 기존 샘플 파일 + 실제 업로드한 파일
 export const allFiles = computed(() => [
   ...businessCardFiles.map(file => ({

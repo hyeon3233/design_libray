@@ -8,6 +8,12 @@ import { folderList } from '../stores/folders'
 import FolderCard from '../components/FolderCard.vue'
 import CreateFolderModal from '../components/CreateFolderModal.vue'
 
+// 홈 화면과 동일한 갤러리 / 목록 SVG 아이콘
+import galleryOff from '../assets/icon/gallery_off.svg'
+import galleryOn from '../assets/icon/gallery_on.svg'
+import listOff from '../assets/icon/List_off.svg'
+import listOn from '../assets/icon/List_on.svg'
+
 const router = useRouter()
 
 // 갤러리 / 목록 보기
@@ -54,23 +60,59 @@ function openFolder(folder) {
 
       <!-- 갤러리 / 목록 보기 -->
       <div class="view-options">
+
+        <!-- 갤러리 보기 -->
         <button
           type="button"
           :class="{ active: viewMode === 'gallery' }"
           :aria-pressed="viewMode === 'gallery'"
           @click="viewMode = 'gallery'"
         >
-          갤러리 보기
+          <img
+            :src="
+              viewMode === 'gallery'
+                ? galleryOn
+                : galleryOff
+            "
+            alt=""
+            class="view-mode-icon icon-normal"
+          />
+
+          <img
+            :src="galleryOn"
+            alt=""
+            class="view-mode-icon icon-hover"
+          />
+
+          <span>갤러리 보기</span>
         </button>
 
+        <!-- 목록 보기 -->
         <button
           type="button"
           :class="{ active: viewMode === 'list' }"
           :aria-pressed="viewMode === 'list'"
           @click="viewMode = 'list'"
         >
-          목록 보기
+          <img
+            :src="
+              viewMode === 'list'
+                ? listOn
+                : listOff
+            "
+            alt=""
+            class="view-mode-icon icon-normal"
+          />
+
+          <img
+            :src="listOn"
+            alt=""
+            class="view-mode-icon icon-hover"
+          />
+
+          <span>목록 보기</span>
         </button>
+
       </div>
     </div>
 
@@ -81,22 +123,25 @@ function openFolder(folder) {
       :class="{ 'list-mode': viewMode === 'list' }"
     >
       <FolderCard
-        v-for="folder in folderList"
-        :key="folder.id"
-        :name="folder.name"
-        :category="folder.category"
-        :file-count="folder.fileCount"
-        :updated-at="folder.updatedAt"
-        :color="folder.color"
-        :thumbnail="folder.thumbnail"
-        @click="openFolder(folder)"
-      />
+  v-for="folder in folderList"
+  :key="folder.id"
+  :folder="folder"
+  :name="folder.name"
+  :category="folder.category"
+  :file-count="folder.fileCount"
+  :updated-at="folder.updatedAt"
+  :color="folder.color"
+  :thumbnail="folder.thumbnail"
+  @click="openFolder(folder)"
+/>
     </div>
 
     <!-- 폴더가 없을 때 -->
     <div v-else class="empty-state">
       <p>등록된 폴더가 없습니다.</p>
-      <span>새 폴더를 만들어 디자인 자료를 정리해보세요.</span>
+      <span>
+        새 폴더를 만들어 디자인 자료를 정리해보세요.
+      </span>
     </div>
 
     <!-- 새 폴더 만들기 공통 팝업 -->
@@ -212,13 +257,19 @@ function openFolder(folder) {
 }
 
 .view-options button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   border: none;
   border-radius: 9px;
   background: transparent;
   padding: 10px 14px;
   color: #7d89a2;
   font-size: 13px;
+  font-family: inherit;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .view-options button:hover {
@@ -228,6 +279,33 @@ function openFolder(folder) {
 .view-options button.active {
   background: #fff0f4;
   color: #ff376b;
+}
+
+/* 갤러리 / 목록 SVG 아이콘 */
+.view-mode-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* 기본 아이콘 표시 */
+.view-options .icon-normal {
+  display: block;
+}
+
+/* 호버용 아이콘 숨김 */
+.view-options .icon-hover {
+  display: none;
+}
+
+/* 비활성 버튼에 마우스를 올렸을 때 아이콘 변경 */
+.view-options button:not(.active):hover .icon-normal {
+  display: none;
+}
+
+.view-options button:not(.active):hover .icon-hover {
+  display: block;
 }
 
 /* 폴더 갤러리 */
@@ -320,6 +398,11 @@ function openFolder(folder) {
 
   .new-folder-btn {
     padding: 12px 18px;
+  }
+
+  .view-options button {
+    padding: 9px 10px;
+    font-size: 12px;
   }
 }
 </style>
