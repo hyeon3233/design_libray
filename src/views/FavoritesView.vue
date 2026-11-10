@@ -1,14 +1,34 @@
 
-
 <script setup>
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import {
+  computed,
+  ref,
+  onMounted,
+  onUnmounted,
+  watch
+} from 'vue'
+
+import { useRoute } from 'vue-router'
+
+import ItemActionMenu from '../components/ItemActionMenu.vue'
+import FileSelectionDeleteModal from '../components/FileSelectionDeleteModal.vue'
 
 import {
   favoriteFiles,
   isFavorite,
   toggleFavorite
 } from '../stores/favorites'
+
+import { isFileHidden } from '../stores/trash'
+
+import {
+  fileSelectionKey,
+  registerSelectableFile,
+  unregisterSelectableFile,
+  isFileSelected,
+  selectFileCard,
+  clearFileSelection
+} from '../stores/fileSelection'
 
 import favoriteOff from '../assets/icon/Favorit_off.svg'
 import favoriteOn from '../assets/icon/Favorit_on.svg'
@@ -18,48 +38,85 @@ import galleryOn from '../assets/icon/gallery_on.svg'
 import listOff from '../assets/icon/List_off.svg'
 import listOn from '../assets/icon/List_on.svg'
 
-const router = useRouter()
+const route = useRoute()
 
-// 갤러리 / 목록 보기
 const viewMode = ref('gallery')
-
-// 즐겨찾기 검색어
 const searchQuery = ref('')
 
-// 즐겨찾기 파일 검색
+// 각 파일의 선택 모달 담당 ID
+const ownerIds = new Map()
+
+function getOwnerId(file) {
+  const key = fileSelectionKey(file)
+
+  if (!ownerIds.has(key)) {
+    ownerIds.set(key, Symbol(`favorite-${key}`))
+  }
+
+  return ownerIds.get(key)
+}
+
+// 즐겨찾기 검색 / 휴지통 파일 제외
 const filteredFavorites = computed(() => {
   const query = searchQuery.value.trim().toLowerCase()
 
-  if (!query) {
-    return favoriteFiles.value
-  }
+  return favoriteFiles.value
+    .filter(file => !isFileHidden(file))
+    .filter(file => {
+      if (!query) return true
 
-  return favoriteFiles.value.filter(file => {
-    const searchableText = [
-      file.name,
-      file.folderName,
-      file.type,
-      ...(file.tags || [])
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
+      const searchableText = [
+        file.name,
+        file.folderName,
+        file.type,
+        ...(file.tags || [])
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
 
-    return searchableText.includes(query)
-  })
+      return searchableText.includes(query)
+    })
 })
 
-// 파일 클릭 시 해당 폴더로 이동
-function openFolder(file) {
-  // 홈 파일에는 연결된 폴더가 없음
-  if (
-    file.folderId === 'home' ||
-    file.folderId == null
-  ) {
-    return
-  }
+// 선택 가능 파일 목록 갱신
+function syncRegisteredFiles() {
+  filteredFavorites.value.forEach(file => {
+    registerSelectableFile(file)
+  })
+}
 
-  router.push(`/folders/${file.folderId}`)
+onMounted(syncRegisteredFiles)
+
+watch(filteredFavorites, (newFiles, oldFiles = []) => {
+  oldFiles.forEach(file => {
+    if (!newFiles.some(
+      item => fileSelectionKey(item) === fileSelectionKey(file)
+    )) {
+      unregisterSelectableFile(file)
+    }
+  })
+
+  newFiles.forEach(registerSelectableFile)
+})
+
+onUnmounted(() => {
+  filteredFavorites.value.forEach(unregisterSelectableFile)
+  clearFileSelection()
+})
+
+watch(
+  () => route.fullPath,
+  () => clearFileSelection()
+)
+
+// 파일 클릭 → 선택
+function handleFileClick(file, event) {
+  selectFileCard(
+    file,
+    event,
+    getOwnerId(file)
+  )
 }
 
 // 즐겨찾기 해제
@@ -82,11 +139,12 @@ function removeFavorite(file) {
       </div>
     </div>
 
-    <!-- 목록 상단 -->
+    <!-- 상단 도구 -->
     <div class="favorites-toolbar">
 
       <div class="section-title">
         <h2>즐겨찾기 파일</h2>
+
         <span class="file-count">
           {{ filteredFavorites.length }}
         </span>
@@ -94,7 +152,7 @@ function removeFavorite(file) {
 
       <div class="toolbar-actions">
 
-        <!-- 파일 검색 -->
+        <!-- 검색 -->
         <div class="favorite-search">
           <input
             v-model="searchQuery"
@@ -146,8 +204,8 @@ function removeFavorite(file) {
               class="view-mode-icon icon-hover"
             />
           </button>
-        </div>
 
+        </div>
       </div>
     </div>
 
@@ -156,23 +214,23 @@ function removeFavorite(file) {
       v-if="filteredFavorites.length"
       class="file-grid"
       :class="{ 'list-mode': viewMode === 'list' }"
+      data-file-selection-scope
     >
       <div
         v-for="file in filteredFavorites"
         :key="`${file.folderId}-${file.id}`"
         class="file-card"
+        :class="{ selected: isFileSelected(file) }"
+        :data-file-select-key="fileSelectionKey(file)"
+        @click.stop="handleFileClick(file, $event)"
       >
-
         <!-- 썸네일 -->
         <div
           class="file-thumbnail"
           :style="{
             backgroundColor: file.color || '#FFE8EF'
           }"
-          @click="openFolder(file)"
         >
-
-          <!-- 실제 파일 이미지 -->
           <img
             v-if="file.thumbnail"
             :src="file.thumbnail"
@@ -180,7 +238,6 @@ function removeFavorite(file) {
             class="preview-image"
           />
 
-          <!-- 이미지가 없는 파일 -->
           <div v-else class="thumbnail-design">
             <span class="thumbnail-cherry">● ●</span>
             <span class="thumbnail-title">CHERRY</span>
@@ -192,23 +249,41 @@ function removeFavorite(file) {
           <span class="file-extension">
             {{ file.type }}
           </span>
+
+          <span
+            v-if="isFileSelected(file)"
+            class="selected-mark"
+            aria-hidden="true"
+          >
+            ✓
+          </span>
         </div>
 
         <!-- 파일 정보 -->
         <div class="file-card-content">
 
+          <!-- 이름 / 더보기 -->
           <div class="file-name-row">
-            <h3
-              :title="file.name"
-              @click="openFolder(file)"
-            >
+            <h3 :title="file.name">
               {{ file.name }}
             </h3>
 
-            <span class="file-more">···</span>
+            <div class="file-menu-area" @click.stop>
+              <ItemActionMenu
+                type="file"
+                :item="file"
+                :is-favorited="
+                  isFavorite(
+                    file.folderId ?? 'home',
+                    file.id
+                  )
+                "
+                @favorite="removeFavorite"
+              />
+            </div>
           </div>
 
-          <!-- 확장자 및 용량 -->
+          <!-- 확장자 및 크기 -->
           <p class="file-meta">
             {{ file.type }}
 
@@ -217,7 +292,7 @@ function removeFavorite(file) {
             </template>
           </p>
 
-          <!-- 업로드 날짜 + 즐겨찾기 -->
+          <!-- 날짜 / 즐겨찾기 -->
           <div class="file-bottom">
 
             <p class="file-date">
@@ -232,48 +307,61 @@ function removeFavorite(file) {
                 >
                   ·
                 </span>
-                <span>수정 {{ file.updatedAt }}</span>
+
+                <span>
+                  수정 {{ file.updatedAt }}
+                </span>
               </template>
             </p>
 
-            <!-- 즐겨찾기 해제 -->
             <button
               type="button"
               class="favorite-btn"
               :aria-label="
-                isFavorite(file.folderId, file.id)
+                isFavorite(
+                  file.folderId ?? 'home',
+                  file.id
+                )
                   ? '즐겨찾기 해제'
                   : '즐겨찾기 추가'
               "
               :aria-pressed="
-                isFavorite(file.folderId, file.id)
+                isFavorite(
+                  file.folderId ?? 'home',
+                  file.id
+                )
               "
               @click.stop="removeFavorite(file)"
             >
               <img
                 :src="
-                  isFavorite(file.folderId, file.id)
+                  isFavorite(
+                    file.folderId ?? 'home',
+                    file.id
+                  )
                     ? favoriteOn
                     : favoriteOff
                 "
                 alt=""
               />
             </button>
-
           </div>
 
           <!-- 원본 폴더명 -->
           <p class="folder-label">
             {{ file.folderName || '홈 파일' }}
           </p>
-
         </div>
+
+        <!-- 공통 키보드 삭제 확인창 -->
+        <FileSelectionDeleteModal
+          :owner-id="getOwnerId(file)"
+        />
       </div>
     </div>
 
-    <!-- 즐겨찾기 파일이 없을 때 -->
+    <!-- 비어 있는 경우 -->
     <div v-else class="empty-state">
-
       <div class="empty-icon">☆</div>
 
       <h3>
@@ -291,12 +379,10 @@ function removeFavorite(file) {
             : '파일 카드의 별을 누르면 이곳에 표시돼요.'
         }}
       </p>
-
     </div>
 
   </div>
 </template>
-
 
 <style scoped>
 .favorites-page {
@@ -304,7 +390,6 @@ function removeFavorite(file) {
   min-width: 0;
 }
 
-/* 상단 제목 */
 .page-heading {
   margin-bottom: 35px;
 }
@@ -322,7 +407,7 @@ function removeFavorite(file) {
   color: #7b89a5;
 }
 
-/* 목록 상단 */
+/* 상단 도구 */
 .favorites-toolbar {
   display: flex;
   align-items: center;
@@ -388,7 +473,7 @@ function removeFavorite(file) {
   color: #a0aabc;
 }
 
-/* 갤러리 / 목록 */
+/* 갤러리 / 목록 보기 */
 .view-options {
   display: flex;
   gap: 4px;
@@ -434,7 +519,7 @@ function removeFavorite(file) {
   display: block;
 }
 
-/* 카드 배치 */
+/* 파일 카드 */
 .file-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -442,12 +527,18 @@ function removeFavorite(file) {
 }
 
 .file-card {
+  position: relative;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #eceff4;
   border-radius: 13px;
   background: #fff;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .file-card:hover {
@@ -455,7 +546,19 @@ function removeFavorite(file) {
   box-shadow: 0 5px 18px rgba(42, 51, 72, 0.06);
 }
 
-/* 파일 썸네일 */
+/* 선택된 파일 */
+.file-card.selected {
+  border: 2px solid #ff366b;
+  background: #fff8fa;
+  box-shadow:
+    0 0 0 2px rgba(255, 54, 107, 0.08);
+}
+
+.file-card:focus-within,
+.file-card:has(.action-menu-root.is-open) {
+  z-index: 200;
+}
+
 .file-thumbnail {
   position: relative;
   aspect-ratio: 1.65 / 1;
@@ -464,14 +567,22 @@ function removeFavorite(file) {
   justify-content: center;
   overflow: hidden;
   cursor: pointer;
+  border-radius: 12px 12px 0 0;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .thumbnail-design {
   width: 70%;
   height: 57%;
-  background: white;
+  background: #fff;
   border-radius: 5px;
-  box-shadow: 0 5px 16px rgba(60, 38, 48, 0.09);
+  box-shadow: 0 5px 16px rgba(60, 38, 48, .09);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -504,7 +615,7 @@ function removeFavorite(file) {
   position: absolute;
   right: 9px;
   bottom: 9px;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, .92);
   color: #69758b;
   border: 1px solid #edeff2;
   border-radius: 5px;
@@ -513,7 +624,22 @@ function removeFavorite(file) {
   font-weight: 600;
 }
 
-/* 파일 정보 */
+.selected-mark {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  width: 23px;
+  height: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: #ff366b;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .file-card-content {
   padding: 11px 12px 12px;
 }
@@ -527,24 +653,26 @@ function removeFavorite(file) {
 
 .file-name-row h3 {
   min-width: 0;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 13px;
   font-weight: 600;
   color: #30394a;
-  cursor: pointer;
   margin: 0;
 }
 
-.file-more {
+.file-menu-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  color: #8f9aae;
-  font-size: 18px;
-  line-height: 1;
+  z-index: 10;
+  cursor: default;
 }
 
-/* 파일 형식 / 크기 */
 .file-meta {
   margin: 9px 0 6px;
   color: #8c96a8;
@@ -555,7 +683,6 @@ function removeFavorite(file) {
   margin: 0 4px;
 }
 
-/* 날짜 / 즐겨찾기 */
 .file-bottom {
   display: flex;
   align-items: center;
@@ -621,6 +748,7 @@ function removeFavorite(file) {
   height: 75px;
   aspect-ratio: auto;
   flex-shrink: 0;
+  border-radius: 12px 0 0 12px;
 }
 
 .file-grid.list-mode .file-card-content {
@@ -646,7 +774,7 @@ function removeFavorite(file) {
   gap: 12px;
 }
 
-/* 빈 화면 */
+/* 비어 있는 화면 */
 .empty-state {
   min-height: 260px;
   padding: 55px 20px;
@@ -691,13 +819,5 @@ function removeFavorite(file) {
     flex-wrap: wrap;
     gap: 10px;
   }
-}
-
-/* 실제 파일 썸네일 */
-.preview-image {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
 }
 </style>

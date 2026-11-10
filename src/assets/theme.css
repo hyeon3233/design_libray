@@ -1,0 +1,1100 @@
+
+/* =========================================
+   CHERRY DESIGN ARCHIVE
+   공통 컬러 테마
+========================================= */
+
+:root,
+:root[data-theme="light"] {
+  --ch-bg: #ffffff;
+  --ch-page: #ffffff;
+  --ch-surface: #ffffff;
+  --ch-surface-soft: #f7f8fb;
+  --ch-surface-hover: #fff0f4;
+
+  --ch-text: #252b38;
+  --ch-text-strong: #111111;
+  --ch-text-muted: #8491a8;
+
+  --ch-border: #e8ebf1;
+  --ch-border-strong: #dce2ec;
+
+  --ch-input: #ffffff;
+  --ch-pink: #ff366b;
+  --ch-pink-soft: #fff0f4;
+
+  --ch-shadow: 0 10px 32px rgba(30, 40, 65, .08);
+}
+
+:root[data-theme="dark"] {
+  --ch-bg: #141821;
+  --ch-page: #181d27;
+  --ch-surface: #242a36;
+  --ch-surface-soft: #2c3341;
+  --ch-surface-hover: #39303f;
+
+  --ch-text: #dce2ec;
+  --ch-text-strong: #f6f7fb;
+  --ch-text-muted: #a1adc2;
+
+  --ch-border: #383f4e;
+  --ch-border-strong: #4b5567;
+
+  --ch-input: #242a36;
+  --ch-pink: #ff668d;
+  --ch-pink-soft: #49303e;
+
+  --ch-shadow: 0 12px 35px rgba(0, 0, 0, .3);
+}
+
+/* 기본 문서 */
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+html[data-theme="dark"],
+html[data-theme="dark"] body,
+html[data-theme="dark"] #app {
+  background: var(--ch-bg);
+  color: var(--ch-text);
+}
+
+/* 부드러운 테마 전환 */
+body {
+  transition:
+    background-color .18s ease,
+    color .18s ease;
+}
+
+/* =========================================
+   전체 레이아웃
+========================================= */
+
+html[data-theme="dark"] :is(
+  .app,
+  .app-layout,
+  .app-container,
+  .main-content,
+  .main-area,
+  .main-wrapper,
+  .content-area,
+  .content-wrapper,
+  .page-content,
+  .page-container,
+  .home-page,
+  .all-files-page,
+  .all-folders-page,
+  .recent-files-page,
+  .favorites-page,
+  .folder-page,
+  .trash-page
+) {
+  background-color: var(--ch-page) !important;
+  color: var(--ch-text);
+}
+
+/* 사이드바 */
+html[data-theme="dark"] :is(
+  .sidebar,
+  .side-bar,
+  .app-sidebar,
+  .sidebar-container,
+  .sidebar-wrapper
+) {
+  background-color: var(--ch-bg) !important;
+  border-color: var(--ch-border) !important;
+}
+
+/* 상단 헤더 */
+html[data-theme="dark"] .top-header {
+  background-color: var(--ch-bg) !important;
+  color: var(--ch-text);
+}
+
+/* =========================================
+   카드 및 일반 컨테이너
+========================================= */
+
+html[data-theme="dark"] :is(
+  .file-card,
+  .asset-card,
+  .folder-card,
+  .favorite-card,
+  .trash-card,
+  .recent-card,
+  .content-card,
+  .section-card,
+  .header-dropdown,
+  .dropdown-menu,
+  .menu-dropdown,
+  .action-dropdown,
+  .action-menu,
+  .modal-content,
+  .modal-container,
+  .confirm-modal,
+  .selection-delete-modal,
+  .delete-modal,
+  .filter-bar,
+  .toolbar
+) {
+  background-color: var(--ch-surface) !important;
+  border-color: var(--ch-border) !important;
+  color: var(--ch-text);
+}
+
+/* 카드가 선택되었을 때 핑크 강조 유지 */
+html[data-theme="dark"] :is(
+  .file-card.selected,
+  .asset-card.selected,
+  .file-card.is-selected,
+  .asset-card.is-selected
+) {
+  background-color: #372b3b !important;
+  border-color: var(--ch-pink) !important;
+  box-shadow: 0 0 0 2px rgba(255, 102, 141, .12);
+}
+
+/* =========================================
+   텍스트
+========================================= */
+
+html[data-theme="dark"] :is(
+  .page-heading h1,
+  .page-title,
+  .section-title h2,
+  .file-name-row h3,
+  .asset-title h3,
+  .folder-name,
+  .folder-title,
+  .profile-name,
+  .dropdown-heading-title,
+  .menu-item-text strong,
+  .profile-menu-info strong,
+  .item-info strong,
+  .modal-heading h2,
+  .selection-delete-modal h2,
+  .confirm-modal h2,
+  .file-card h3,
+  .folder-card h3
+) {
+  color: var(--ch-text-strong) !important;
+}
+
+html[data-theme="dark"] :is(
+  .page-heading p,
+  .page-description,
+  .file-meta,
+  .file-date,
+  .folder-label,
+  .folder-meta,
+  .asset-bottom,
+  .menu-item-text small,
+  .profile-menu-info small,
+  .modal-heading p,
+  .item-info span,
+  .more-count,
+  .empty-state p
+) {
+  color: var(--ch-text-muted) !important;
+}
+
+/* 일반 페이지의 제목 및 안내문 */
+html[data-theme="dark"] main :is(
+  h1,
+  h2,
+  h3,
+  h4,
+  label,
+  th
+) {
+  color: var(--ch-text-strong);
+}
+
+html[data-theme="dark"] main :is(
+  p,
+  td,
+  small
+) {
+  color: var(--ch-text);
+}
+
+/* =========================================
+   입력창 / 검색창
+========================================= */
+
+html[data-theme="dark"] :is(
+  input,
+  textarea,
+  select
+) {
+  background-color: var(--ch-input);
+  color: var(--ch-text-strong);
+  border-color: var(--ch-border);
+}
+
+html[data-theme="dark"] :is(
+  input,
+  textarea
+)::placeholder {
+  color: var(--ch-text-muted);
+}
+
+html[data-theme="dark"] :is(
+  .search-box,
+  .favorite-search,
+  .search-input-wrapper,
+  .search-field,
+  .input-wrapper
+) {
+  background-color: var(--ch-input) !important;
+  border-color: var(--ch-border) !important;
+  color: var(--ch-text);
+}
+
+/* =========================================
+   버튼, 메뉴, 필터
+========================================= */
+
+html[data-theme="dark"] :is(
+  .header-icon-btn,
+  .profile-button,
+  .favorite-btn
+) {
+  color: var(--ch-text);
+}
+
+html[data-theme="dark"] :is(
+  .dropdown-item,
+  .menu-item,
+  .filter-btn,
+  .view-options button,
+  .sort-button,
+  .tab-button
+) {
+  color: var(--ch-text);
+}
+
+html[data-theme="dark"] :is(
+  .dropdown-item:hover,
+  .menu-item:hover,
+  .filter-btn:hover,
+  .tab-button:hover
+) {
+  background-color: var(--ch-surface-hover) !important;
+}
+
+html[data-theme="dark"] :is(
+  .view-options,
+  .filter-group,
+  .header-divider,
+  .dropdown-divider
+) {
+  border-color: var(--ch-border) !important;
+}
+
+html[data-theme="dark"] .dropdown-divider,
+html[data-theme="dark"] .header-divider {
+  background-color: var(--ch-border) !important;
+}
+
+/* 활성 상태의 핑크색 강조 */
+html[data-theme="dark"] :is(
+  .dropdown-item:hover .menu-item-text strong,
+  .dropdown-item:hover .menu-icon,
+  .profile-button:hover .profile-name,
+  .profile-button.profile-active .profile-name
+) {
+  color: var(--ch-pink) !important;
+}
+
+/* =========================================
+   표 / 목록
+========================================= */
+
+html[data-theme="dark"] :is(
+  table,
+  .file-table,
+  .trash-table
+) {
+  color: var(--ch-text);
+  border-color: var(--ch-border);
+}
+
+html[data-theme="dark"] :is(
+  thead,
+  .table-head,
+  .table-header
+) {
+  background-color: var(--ch-surface-soft) !important;
+}
+
+html[data-theme="dark"] :is(
+  tr,
+  td,
+  th,
+  .table-row,
+  .list-row
+) {
+  border-color: var(--ch-border) !important;
+}
+
+/* =========================================
+   모달 / 휴지통
+========================================= */
+
+html[data-theme="dark"] :is(
+  .selection-delete-modal,
+  .delete-modal,
+  .confirm-modal
+) {
+  box-shadow: var(--ch-shadow);
+}
+
+html[data-theme="dark"] :is(
+  .selected-item-list,
+  .delete-modal-item,
+  .modal-file-info,
+  .item-preview
+) {
+  background-color: var(--ch-surface-soft) !important;
+  border-color: var(--ch-border) !important;
+}
+
+html[data-theme="dark"] :is(
+  .cancel-button,
+  .modal-cancel
+) {
+  background: var(--ch-surface-soft) !important;
+  color: var(--ch-text) !important;
+  border-color: var(--ch-border-strong) !important;
+}
+
+/* =========================================
+   빈 화면 / 카운트 / 태그
+========================================= */
+
+html[data-theme="dark"] :is(
+  .empty-state,
+  .empty-container
+) {
+  background-color: transparent !important;
+  border-color: var(--ch-border) !important;
+}
+
+html[data-theme="dark"] :is(
+  .file-count,
+  .asset-tag,
+  .tag,
+  .category-tag
+) {
+  background-color: var(--ch-surface-soft) !important;
+  color: var(--ch-text-muted) !important;
+}
+
+/* =========================================
+   이미지와 썸네일 보존
+========================================= */
+
+/* 일반 이미지에는 다크 필터를 사용하지 않는다.
+   로고/썸네일 색을 그대로 유지한다. */
+
+html[data-theme="dark"] img {
+  filter: none;
+}
+
+/* 선택 체크 아이콘 */
+html[data-theme="dark"] .selected-mark {
+  background-color: var(--ch-pink) !important;
+  color: #ffffff !important;
+}
+
+/* 확장자 배지 */
+html[data-theme="dark"] .file-extension {
+  background-color: rgba(36, 42, 54, .92) !important;
+  color: #e8edf5 !important;
+  border-color: var(--ch-border) !important;
+}
+
+/* 스크롤바 */
+html[data-theme="dark"] {
+  scrollbar-color: #4a5365 #1a1e29;
+}
+
+/* 선택 텍스트 */
+html[data-theme="dark"] ::selection {
+  background: #99445f;
+  color: #ffffff;
+}
+
+
+/* ==========================================
+   CHERRY 다크모드 가독성 보정
+   기존 SVG 파일 수정 없이 적용
+========================================== */
+
+html[data-theme="dark"] {
+  --ch-icon-color: #c5cedd;
+  --ch-text-color: #e8edf6;
+  --ch-muted-color: #a4afc2;
+}
+
+/* ==========================================
+   1. 왼쪽 사이드바
+========================================== */
+
+/* 사이드바 기본 글자색 */
+html[data-theme="dark"] :is(
+  .sidebar,
+  .side-bar,
+  .app-sidebar,
+  .sidebar-container,
+  .sidebar-wrapper
+) {
+  color: var(--ch-text-color) !important;
+}
+
+/* 비활성 메뉴의 텍스트 */
+html[data-theme="dark"] :is(
+  .sidebar,
+  .side-bar,
+  .app-sidebar
+) :is(
+  a,
+  button,
+  .nav-item,
+  .menu-item,
+  .sidebar-item,
+  .nav-link,
+  .menu-label
+):not(.active):not(.router-link-active) {
+  color: var(--ch-muted-color) !important;
+}
+
+/* 메뉴 안쪽 span에 지정된 검정 글자 보정 */
+html[data-theme="dark"] :is(
+  .sidebar,
+  .side-bar,
+  .app-sidebar
+) :is(
+  a,
+  button,
+  .nav-item,
+  .sidebar-item
+):not(.active):not(.router-link-active) span {
+  color: var(--ch-muted-color) !important;
+}
+
+/* 사이드바의 검정 SVG 이미지 → 밝은 회색 */
+html[data-theme="dark"] :is(
+  .sidebar,
+  .side-bar,
+  .app-sidebar
+) :is(
+  a,
+  button,
+  .nav-item,
+  .sidebar-item
+):not(.active):not(.router-link-active) img {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.72;
+}
+
+/* 마우스 올렸을 때 */
+html[data-theme="dark"] :is(
+  .sidebar,
+  .side-bar,
+  .app-sidebar
+) :is(
+  a,
+  button,
+  .nav-item,
+  .sidebar-item
+):not(.active):hover img {
+  opacity: 1;
+}
+
+/* 현재 선택된 메뉴는 핑크색 유지 */
+html[data-theme="dark"] :is(
+  .sidebar,
+  .side-bar,
+  .app-sidebar
+) :is(
+  .active,
+  .router-link-active,
+  .router-link-exact-active
+) {
+  color: #ff366b !important;
+}
+
+/* ==========================================
+   2. 상단 헤더 아이콘
+========================================== */
+
+/* 알림 / 최근 활동 / 설정 */
+html[data-theme="dark"]
+.header-icon-btn img {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.78;
+}
+
+html[data-theme="dark"]
+.header-icon-btn:hover img {
+  opacity: 1;
+}
+
+/* 검색 아이콘 */
+html[data-theme="dark"]
+.search-icon {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.75;
+}
+
+/* 프로필 화살표 */
+html[data-theme="dark"]
+.profile-arrow-icon {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.85;
+}
+
+/* 프로필 닉네임 */
+html[data-theme="dark"]
+.profile-name {
+  color: #f0f3f9 !important;
+}
+
+/* 검색창 안 글자 */
+html[data-theme="dark"]
+.search-box input {
+  color: #f0f3f9 !important;
+}
+
+html[data-theme="dark"]
+.search-box input::placeholder {
+  color: #a4afc2 !important;
+}
+
+/* ==========================================
+   3. 파일 카드 텍스트
+========================================== */
+
+html[data-theme="dark"] :is(
+  .file-card,
+  .asset-card
+) :is(
+  h3,
+  .file-name,
+  .file-title,
+  .asset-title
+) {
+  color: #f0f3f9 !important;
+}
+
+html[data-theme="dark"] :is(
+  .file-card,
+  .asset-card
+) :is(
+  .file-meta,
+  .file-date,
+  .asset-bottom,
+  .folder-label
+) {
+  color: #aebbd0 !important;
+}
+
+/* ==========================================
+   4. 즐겨찾기 별표 아이콘
+========================================== */
+
+/*
+  활성 별표는 핑크색 그대로 유지.
+  비활성 SVG만 밝은 회색으로 표시.
+  아래 선택자는 비활성 아이콘 파일명을 기준으로 함.
+*/
+
+html[data-theme="dark"]
+.favorite-btn img[src*="Favorit_off"] {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.7;
+}
+
+html[data-theme="dark"]
+.favorite-btn:hover img[src*="Favorit_off"] {
+  opacity: 1;
+}
+
+/* 활성 별표는 원래 핑크색 유지 */
+html[data-theme="dark"]
+.favorite-btn img[src*="Favorit_on"] {
+  filter: none !important;
+  opacity: 1;
+}
+
+/* ==========================================
+   5. 일반 버튼 및 목록 글자
+========================================== */
+
+html[data-theme="dark"] :is(
+  .view-options,
+  .filter-group,
+  .sort-button,
+  .tab-button
+) {
+  color: #dce2ec !important;
+}
+
+/* 카드 및 메뉴의 검정 SVG 선 보정 */
+html[data-theme="dark"] :is(
+  .file-menu-area,
+  .asset-menu-area
+) svg {
+  color: #c5cedd;
+}
+
+/* ==========================================
+   6. 로고와 파일 미리보기는 원본 유지
+========================================== */
+
+/* 로고와 디자인 이미지에는 색상 필터를 적용하지 않음 */
+html[data-theme="dark"] :is(
+  .logo,
+  .sidebar-logo,
+  .brand-logo,
+  .preview-image,
+  .asset-thumbnail,
+  .file-thumbnail
+) img {
+  filter: none !important;
+  opacity: 1;
+}
+
+
+/* ==========================================
+   CHERRY DARK MODE
+   제목 / 텍스트 / 아이콘 가독성 보정
+========================================== */
+
+/* 1. 페이지별 주요 제목 */
+html[data-theme="dark"] :is(
+  .home-page,
+  .all-files-page,
+  .all-folders-page,
+  .recent-files-page,
+  .favorites-page,
+  .folder-page,
+  .trash-page,
+  .main-content,
+  .page-content
+) :is(
+  h1,
+  h2,
+  h3,
+  h4
+) {
+  color: #F2F4F9 !important;
+}
+
+/* 2. 전체 파일, 팀 폴더 등 섹션 제목 */
+html[data-theme="dark"] :is(
+  .section-title,
+  .section-heading,
+  .section-header,
+  .folder-section-title,
+  .file-section-title,
+  .recent-section-title
+) {
+  color: #F2F4F9 !important;
+}
+
+html[data-theme="dark"] :is(
+  .section-title,
+  .section-heading,
+  .section-header
+) :is(
+  h1,
+  h2,
+  h3,
+  span:not(.file-count)
+) {
+  color: #F2F4F9 !important;
+}
+
+/* 3. 페이지 설명 및 보조 텍스트 */
+html[data-theme="dark"] :is(
+  .page-description,
+  .page-subtitle,
+  .section-description,
+  .section-subtitle,
+  .empty-state p,
+  .empty-container p
+) {
+  color: #AEBBD0 !important;
+}
+
+/* 4. 휴지통 등 빈 화면 */
+html[data-theme="dark"] :is(
+  .empty-state,
+  .empty-container,
+  .empty-content
+) :is(
+  h2,
+  h3,
+  strong
+) {
+  color: #E8EDF6 !important;
+}
+
+html[data-theme="dark"] :is(
+  .empty-state,
+  .empty-container,
+  .empty-content
+) :is(
+  p,
+  span
+) {
+  color: #AEBBD0 !important;
+}
+
+/* 5. 갤러리 / 목록 보기 버튼 */
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) {
+  background-color: #242A36 !important;
+  border-color: #41495A !important;
+}
+
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button {
+  color: #C5CEDD !important;
+}
+
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button:not(.active) img {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.8;
+}
+
+/* 선택된 보기 버튼은 핑크 강조 */
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button.active {
+  background-color: #49303E !important;
+  color: #FF668D !important;
+}
+
+/* 6. 즐겨찾기 비활성 아이콘 */
+html[data-theme="dark"]
+.favorite-btn[aria-pressed="false"] img {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.75;
+}
+
+/* 활성 즐겨찾기 핑크 유지 */
+html[data-theme="dark"]
+.favorite-btn[aria-pressed="true"] img {
+  filter: none !important;
+  opacity: 1;
+}
+
+/* 7. 인라인 SVG 기본 색상
+   stroke="currentColor" 사용 시 적용 */
+html[data-theme="dark"] :is(
+  .empty-state,
+  .empty-container,
+  .view-options,
+  .view-toggle,
+  .file-menu-area
+) svg {
+  color: #C5CEDD;
+}
+
+/* 8. 카운트 배지 */
+html[data-theme="dark"] :is(
+  .file-count,
+  .folder-count,
+  .count-badge
+) {
+  background-color: #343B4B !important;
+  color: #E8EDF6 !important;
+}
+
+/* 9. 검색 및 필터 텍스트 */
+html[data-theme="dark"] :is(
+  .search-box,
+  .favorite-search,
+  .filter-bar,
+  .toolbar
+) {
+  color: #E8EDF6;
+}
+
+html[data-theme="dark"] :is(
+  input,
+  textarea,
+  select
+) {
+  color: #E8EDF6 !important;
+  caret-color: #FF668D;
+}
+
+/* 10. 모달 내부 제목과 설명 */
+html[data-theme="dark"] :is(
+  .selection-delete-modal,
+  .confirm-modal,
+  .delete-modal
+) :is(
+  h2,
+  h3,
+  strong
+) {
+  color: #F2F4F9 !important;
+}
+
+html[data-theme="dark"] :is(
+  .selection-delete-modal,
+  .confirm-modal,
+  .delete-modal
+) :is(
+  p,
+  small,
+  .item-info span
+) {
+  color: #AEBBD0 !important;
+}
+
+/* 11. 활성 상태와 선택 테두리 보존 */
+html[data-theme="dark"] :is(
+  .file-card.selected,
+  .asset-card.selected
+) {
+  border-color: #FF668D !important;
+}
+
+html[data-theme="dark"] .selected-mark {
+  background-color: #FF668D !important;
+  color: #FFFFFF !important;
+}
+
+
+/* ==========================================
+   갤러리 / 목록 보기 버튼 다크모드 적용
+========================================== */
+
+/* 전환 버튼 전체 배경 */
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) {
+  background: #242A36 !important;
+  border-color: #41495A !important;
+}
+
+/* 기본 버튼 */
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: #C5CEDD !important;
+}
+
+/* 선택된 버튼 */
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button.active,
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button[aria-pressed="true"] {
+  background: #49303E !important;
+  border-color: #FF668D !important;
+  color: #FF668D !important;
+  box-shadow: none !important;
+}
+
+/* 선택되지 않은 아이콘만 밝은 회색으로 */
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button:not(.active):not([aria-pressed="true"]) img {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.8;
+}
+
+/* 선택된 아이콘은 핑크색으로 */
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button.active img,
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button[aria-pressed="true"] img {
+  filter: brightness(0) saturate(100%)
+    invert(57%) sepia(80%) saturate(1300%)
+    hue-rotate(301deg) brightness(102%) contrast(101%) !important;
+  opacity: 1;
+}
+
+/* 버튼 내부 글자색 */
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button span {
+  color: inherit !important;
+}
+
+/* 호버 */
+html[data-theme="dark"] :is(
+  .view-options,
+  .view-toggle,
+  .view-mode-toggle
+) button:not(.active):not([aria-pressed="true"]):hover {
+  background: #343B4B !important;
+}
+
+
+/* ==========================================
+   다크모드 - 전체 파일 / 최근 업로드 파일
+   숫자 배지 색상 수정
+========================================== */
+
+html[data-theme="dark"] .section-heading h2 .count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 39px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 12px;
+
+  background-color: #343B4B !important;
+  color: #E8EDF6 !important;
+
+  border: none !important;
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+
+/* ==========================================
+   CHERRY 숫자 배지 스타일 통합
+   전체 폴더 / 팀 폴더 / 전체 파일
+   최근 업로드 파일 / 즐겨찾기 파일
+   화이트·다크 모드 공통 크기
+========================================== */
+
+/* 1. 모든 숫자 배지 크기 통일 */
+:is(
+  .file-count,
+  .folder-count,
+  .count-badge,
+  .section-count,
+  .total-count,
+  .recent-count,
+  .section-heading h2 .count
+) {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  /* 크기 */
+  width: auto !important;
+  min-width: 30px !important;
+  height: 28px !important;
+  padding: 0 9px !important;
+
+  box-sizing: border-box !important;
+
+  /* 둥근 배지 */
+  border-radius: 999px !important;
+
+  /* 숫자 */
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  /* 기본 테두리 제거 */
+  border: none !important;
+}
+
+/* 2. 화이트 모드
+   기존 밝은 배지 디자인 유지 */
+html[data-theme="light"] :is(
+  .file-count,
+  .folder-count,
+  .count-badge,
+  .section-count,
+  .total-count,
+  .recent-count,
+  .section-heading h2 .count
+) {
+  background-color: #F1F3F7 !important;
+  color: #53647F !important;
+}
+
+/* 3. 다크 모드
+   모든 폴더 배지와 동일하게 */
+html[data-theme="dark"] :is(
+  .file-count,
+  .folder-count,
+  .count-badge,
+  .section-count,
+  .total-count,
+  .recent-count,
+  .section-heading h2 .count
+) {
+  background-color: #343B4B !important;
+  color: #E8EDF6 !important;
+}
+
+/* 4. 배지 안쪽에 span이 있는 경우 */
+html[data-theme="dark"] :is(
+  .file-count,
+  .folder-count,
+  .count-badge,
+  .section-count,
+  .total-count,
+  .recent-count,
+  .section-heading h2 .count
+) span {
+  color: #E8EDF6 !important;
+}
+
+/* 5. 제목과 숫자 배지 사이 간격 */
+:is(
+  .section-heading h2 .count,
+  .section-title .file-count,
+  .section-title .folder-count
+) {
+  margin-left: 8px;
+  vertical-align: middle;
+}

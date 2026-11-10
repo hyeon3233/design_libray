@@ -1,11 +1,32 @@
 
 <script setup>
-import { computed } from 'vue'
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  watch
+} from 'vue'
+
+import { useRoute } from 'vue-router'
+
+import ItemActionMenu from './ItemActionMenu.vue'
+import FileSelectionDeleteModal from './FileSelectionDeleteModal.vue'
+
+import { folderList } from '../stores/folders'
 
 import {
   isFavorite,
   toggleFavorite
 } from '../stores/favorites'
+
+import {
+  fileSelectionKey,
+  registerSelectableFile,
+  unregisterSelectableFile,
+  isFileSelected,
+  selectFileCard,
+  clearFileSelection
+} from '../stores/fileSelection'
 
 import favoriteOff from '../assets/icon/Favorit_off.svg'
 import favoriteOn from '../assets/icon/Favorit_on.svg'
@@ -15,25 +36,70 @@ const props = defineProps({
     type: Object,
     required: true
   },
+
   title: String,
   thumbnail: String,
+
   tags: {
     type: Array,
     default: () => []
   },
+
   updatedAt: String,
+
   author: {
     type: String,
     default: '나'
+  },
+
+  currentUserId: {
+    type: [String, Number],
+    default: null
+  },
+
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
+
+  isLoggedIn: {
+    type: Boolean,
+    default: true
   }
 })
 
-// 파일의 즐겨찾기 식별자
+const emit = defineEmits([
+  'edit',
+  'move',
+  'download',
+  'delete'
+])
+
+const route = useRoute()
+
+const ownerId = Symbol('home-asset-card')
+
+// 파일이 속한 폴더
+const folder = computed(() =>
+  folderList.value.find(
+    item =>
+      String(item.id) === String(props.file.folderId)
+  )
+)
+
+// 즐겨찾기용 폴더 정보
 const favoriteFolderId = computed(() =>
   props.file.folderId ?? 'home'
 )
 
-// 현재 즐겨찾기 상태
+const favoriteFolder = computed(() =>
+  folder.value ?? {
+    id: favoriteFolderId.value,
+    name: '홈 파일'
+  }
+)
+
+// 즐겨찾기 상태
 const isFileFavorite = computed(() =>
   isFavorite(
     favoriteFolderId.value,
@@ -43,16 +109,68 @@ const isFileFavorite = computed(() =>
 
 // 즐겨찾기 추가 / 해제
 function handleFavorite() {
-  toggleFavorite(props.file, {
-    id: favoriteFolderId.value,
-    name: '홈 파일'
-  })
+  toggleFavorite(
+    props.file,
+    favoriteFolder.value
+  )
 }
+
+// 파일 카드 선택
+function handleCardClick(event) {
+  selectFileCard(props.file, event, ownerId)
+}
+
+// 기존 메뉴 이벤트
+function handleEditFile(file) {
+  emit('edit', file)
+}
+
+function handleMoveFile(file) {
+  emit('move', file)
+}
+
+function handleDownloadFile(file) {
+  emit('download', file)
+}
+
+function handleDeleteFile(file) {
+  emit('delete', file)
+}
+
+onMounted(() => {
+  registerSelectableFile(props.file)
+})
+
+onUnmounted(() => {
+  unregisterSelectableFile(props.file)
+})
+
+watch(
+  () => props.file,
+  (newFile, oldFile) => {
+    if (oldFile) {
+      unregisterSelectableFile(oldFile)
+    }
+
+    if (newFile) {
+      registerSelectableFile(newFile)
+    }
+  }
+)
+
+watch(
+  () => route.fullPath,
+  () => clearFileSelection()
+)
 </script>
 
 <template>
-  <article class="asset-card">
-
+  <article
+    class="asset-card"
+    :class="{ selected: isFileSelected(file) }"
+    :data-file-select-key="fileSelectionKey(file)"
+    @click.stop="handleCardClick"
+  >
     <!-- 파일 썸네일 -->
     <div class="asset-thumbnail">
       <img
@@ -60,16 +178,41 @@ function handleFavorite() {
         :src="thumbnail"
         :alt="title"
       />
-      <span v-else>이미지 미리보기</span>
+
+      <span v-else>
+        이미지 미리보기
+      </span>
+
+      <span
+        v-if="isFileSelected(file)"
+        class="selected-mark"
+        aria-hidden="true"
+      >
+        ✓
+      </span>
     </div>
 
-    <!-- 파일 이름 -->
+    <!-- 파일 이름 및 관리 메뉴 -->
     <div class="asset-title">
-      <h3>{{ title }}</h3>
+      <h3 :title="title">
+        {{ title }}
+      </h3>
 
-      <button type="button" class="more-btn">
-        ⋯
-      </button>
+      <div class="asset-menu-area" @click.stop>
+        <ItemActionMenu
+          type="file"
+          :item="file"
+          :current-user-id="currentUserId"
+          :is-admin="isAdmin"
+          :is-logged-in="isLoggedIn"
+          :is-favorited="isFileFavorite"
+          @edit="handleEditFile"
+          @download="handleDownloadFile"
+          @move="handleMoveFile"
+          @favorite="handleFavorite"
+          @delete="handleDeleteFile"
+        />
+      </div>
     </div>
 
     <!-- 태그 -->
@@ -85,7 +228,6 @@ function handleFavorite() {
 
     <!-- 작성자 / 날짜 / 즐겨찾기 -->
     <div class="asset-bottom">
-
       <div class="author">
         <span class="avatar">C</span>
         <span>{{ author }}</span>
@@ -94,7 +236,6 @@ function handleFavorite() {
       <div class="asset-actions">
         <span>{{ updatedAt }}</span>
 
-        <!-- 파일 즐겨찾기 -->
         <button
           type="button"
           class="favorite-btn"
@@ -116,27 +257,53 @@ function handleFavorite() {
           />
         </button>
       </div>
-
     </div>
 
+    <FileSelectionDeleteModal :owner-id="ownerId" />
   </article>
 </template>
 
 <style scoped>
 .asset-card {
+  position: relative;
   min-width: 0;
   background: #fff;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  overflow: visible;
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
+}
+
+/* 선택된 홈 파일 */
+.asset-card.selected {
+  border: 2px solid #ff366b;
+  background: #fff8fa;
+  box-shadow:
+    0 0 0 2px rgba(255, 54, 107, 0.08);
+}
+
+.asset-card:focus-within,
+.asset-card:has(.action-menu-root.is-open) {
+  z-index: 200;
 }
 
 .asset-thumbnail {
+  position: relative;
   width: 100%;
   aspect-ratio: 1.7 / 1;
   background: #f2f3f7;
   border-radius: 10px;
   overflow: hidden;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   color: #9ca6ba;
   font-size: 12px;
 }
@@ -146,6 +313,22 @@ function handleFavorite() {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.selected-mark {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  width: 23px;
+  height: 23px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: #ff366b;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .asset-title {
@@ -158,6 +341,7 @@ function handleFavorite() {
 
 .asset-title h3 {
   min-width: 0;
+  flex: 1;
   font-size: 14px;
   font-weight: 700;
   color: #18243c;
@@ -167,12 +351,14 @@ function handleFavorite() {
   white-space: nowrap;
 }
 
-.more-btn {
-  border: none;
-  background: none;
-  color: #8494b2;
-  font-size: 20px;
-  cursor: pointer;
+.asset-menu-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 10;
+  cursor: default;
 }
 
 .asset-tags {
@@ -219,7 +405,6 @@ function handleFavorite() {
   font-weight: 700;
 }
 
-/* 날짜 및 즐겨찾기 */
 .asset-actions {
   display: flex;
   align-items: center;

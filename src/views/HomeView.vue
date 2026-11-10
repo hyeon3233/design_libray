@@ -3,6 +3,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { isFileHidden } from '../stores/trash'
 import { folderList } from '../stores/folders'
 import { searchQuery } from '../stores/search'
 import { homeRecentAssets, searchFiles } from '../stores/files'
@@ -190,13 +191,14 @@ const filteredAssets = computed(() => {
     categoryAliases[selectedCategory.value] || []
 
   return homeRecentAssets
-    .filter(asset =>
-      selectedCategory.value === '전체' ||
-      (asset.tags || []).some(tag =>
-        keywords.includes(tag)
-      )
+  .filter(asset => !isFileHidden(asset))
+  .filter(asset =>
+    selectedCategory.value === '전체' ||
+    (asset.tags || []).some(tag =>
+      keywords.includes(tag)
     )
-    .slice(0, 6)
+  )
+  .slice(0, 6)
 })
 </script>
 
@@ -312,16 +314,17 @@ const filteredAssets = computed(() => {
         :class="{ 'list-mode': viewMode === 'list' }"
       >
         <FolderCard
-          v-for="folder in filteredFolders"
-          :key="folder.id"
-          :name="folder.name"
-          :category="folder.category"
-          :file-count="folder.fileCount"
-          :updated-at="folder.updatedAt"
-          :color="folder.color"
-          :thumbnail="folder.thumbnail"
-          @click="openFolder(folder)"
-        />
+  v-for="folder in filteredFolders"
+  :key="folder.id"
+  :folder="folder"
+  :name="folder.name"
+  :category="folder.category"
+  :file-count="folder.fileCount"
+  :updated-at="folder.updatedAt"
+  :color="folder.color"
+  :thumbnail="folder.thumbnail"
+  @click="openFolder(folder)"
+/>
       </div>
 
       <p

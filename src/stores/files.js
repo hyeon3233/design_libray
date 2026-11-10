@@ -1,7 +1,9 @@
 
 import { computed } from 'vue'
+
 import { folderList } from './folders'
 import { uploadedFiles } from './uploadedFiles'
+import { isFileHidden } from './trash'
 
 import posterImg from '../assets/recent/poster.png'
 import businessImg from '../assets/recent/business-card.png'
@@ -10,7 +12,7 @@ import bannerImg from '../assets/recent/banner.png'
 import goodsImg from '../assets/recent/goods.png'
 import snsImg from '../assets/recent/sns.png'
 
-// 홈에 기본으로 표시할 파일 6개
+// 홈 기본 파일
 export const homeRecentAssets = [
   {
     id: 101,
@@ -74,25 +76,83 @@ export const homeRecentAssets = [
   }
 ]
 
-// 명함 폴더에 있는 파일 12개
+// 명함 폴더 파일
 const businessCardFiles = [
-  { id: 1, name: '체리 명함 시안 01', type: 'AI', size: '3.2MB', uploadedAt: '2026.10.28', updatedAt: null, color: '#FFE8EF' },
-  { id: 2, name: '체리 명함 시안 02', type: 'PSD', size: '8.4MB', uploadedAt: '2026.10.20', updatedAt: '2026.10.27', color: '#FCE5F0' },
-  { id: 3, name: '체리 명함 시안 03', type: 'PNG', size: '1.8MB', uploadedAt: '2026.10.27', updatedAt: null, color: '#F7E9F2' },
-  { id: 4, name: '명함 목업 이미지', type: 'JPG', size: '2.1MB', uploadedAt: '2026.10.26', updatedAt: null, color: '#F4E9E6' },
-  { id: 5, name: '로고 버전 명함', type: 'AI', size: '4.5MB', uploadedAt: '2026.10.22', updatedAt: '2026.10.25', color: '#FBE6EE' },
-  { id: 6, name: '명함 일러스트', type: 'AI', size: '3.7MB', uploadedAt: '2026.10.24', updatedAt: null, color: '#EAF2FD' },
-  { id: 7, name: '명함 배경 패턴', type: 'PNG', size: '1.3MB', uploadedAt: '2026.10.23', updatedAt: null, color: '#F5E9FF' },
-  { id: 8, name: '행사 명함', type: 'PDF', size: '2.6MB', uploadedAt: '2026.10.22', updatedAt: null, color: '#FFF1DE' },
-  { id: 9, name: '명함 시안 04', type: 'PSD', size: '5.2MB', uploadedAt: '2026.10.18', updatedAt: '2026.10.21', color: '#E9F6EE' },
-  { id: 10, name: '명함 시안 05', type: 'AI', size: '4.1MB', uploadedAt: '2026.10.20', updatedAt: null, color: '#FFE7EB' },
-  { id: 11, name: '명함 시안 06', type: 'PNG', size: '1.7MB', uploadedAt: '2026.10.19', updatedAt: null, color: '#EEE8FA' },
-  { id: 12, name: '명함 시안 07', type: 'JPG', size: '2.4MB', uploadedAt: '2026.10.18', updatedAt: null, color: '#F8E8F0' }
+  {
+    id: 1, name: '체리 명함 시안 01',
+    type: 'AI', size: '3.2MB',
+    uploadedAt: '2026.10.28',
+    updatedAt: null, color: '#FFE8EF'
+  },
+  {
+    id: 2, name: '체리 명함 시안 02',
+    type: 'PSD', size: '8.4MB',
+    uploadedAt: '2026.10.20',
+    updatedAt: '2026.10.27', color: '#FCE5F0'
+  },
+  {
+    id: 3, name: '체리 명함 시안 03',
+    type: 'PNG', size: '1.8MB',
+    uploadedAt: '2026.10.27',
+    updatedAt: null, color: '#F7E9F2'
+  },
+  {
+    id: 4, name: '명함 목업 이미지',
+    type: 'JPG', size: '2.1MB',
+    uploadedAt: '2026.10.26',
+    updatedAt: null, color: '#F4E9E6'
+  },
+  {
+    id: 5, name: '로고 버전 명함',
+    type: 'AI', size: '4.5MB',
+    uploadedAt: '2026.10.22',
+    updatedAt: '2026.10.25', color: '#FBE6EE'
+  },
+  {
+    id: 6, name: '명함 일러스트',
+    type: 'AI', size: '3.7MB',
+    uploadedAt: '2026.10.24',
+    updatedAt: null, color: '#EAF2FD'
+  },
+  {
+    id: 7, name: '명함 배경 패턴',
+    type: 'PNG', size: '1.3MB',
+    uploadedAt: '2026.10.23',
+    updatedAt: null, color: '#F5E9FF'
+  },
+  {
+    id: 8, name: '행사 명함',
+    type: 'PDF', size: '2.6MB',
+    uploadedAt: '2026.10.22',
+    updatedAt: null, color: '#FFF1DE'
+  },
+  {
+    id: 9, name: '명함 시안 04',
+    type: 'PSD', size: '5.2MB',
+    uploadedAt: '2026.10.18',
+    updatedAt: '2026.10.21', color: '#E9F6EE'
+  },
+  {
+    id: 10, name: '명함 시안 05',
+    type: 'AI', size: '4.1MB',
+    uploadedAt: '2026.10.20',
+    updatedAt: null, color: '#FFE7EB'
+  },
+  {
+    id: 11, name: '명함 시안 06',
+    type: 'PNG', size: '1.7MB',
+    uploadedAt: '2026.10.19',
+    updatedAt: null, color: '#EEE8FA'
+  },
+  {
+    id: 12, name: '명함 시안 07',
+    type: 'JPG', size: '2.4MB',
+    uploadedAt: '2026.10.18',
+    updatedAt: null, color: '#F8E8F0'
+  }
 ]
 
-// 전체 파일
-
-// 기존 샘플 파일 + 실제 업로드한 파일
+// 전체 파일: 삭제된 파일은 자동 제외
 export const allFiles = computed(() => [
   ...businessCardFiles.map(file => ({
     ...file,
@@ -104,14 +164,14 @@ export const allFiles = computed(() => [
   ...homeRecentAssets,
 
   ...uploadedFiles.value
-])
+].filter(file => !isFileHidden(file)))
 
-
-
-// 최근 업로드 순 정렬
+// 최근 업로드 파일
 export const recentFiles = computed(() =>
   [...allFiles.value].sort((a, b) =>
-    b.uploadedAt.localeCompare(a.uploadedAt)
+    String(b.uploadedAt || '').localeCompare(
+      String(a.uploadedAt || '')
+    )
   )
 )
 
@@ -126,7 +186,8 @@ export function searchFiles(
 
   return recentFiles.value.filter(file => {
     const folderName = folderList.value.find(
-      folder => folder.id === file.folderId
+      folder =>
+        String(folder.id) === String(file.folderId)
     )?.name || ''
 
     const searchableText = [
@@ -134,7 +195,9 @@ export function searchFiles(
       file.type,
       folderName,
       ...(file.tags || [])
-    ].join(' ').toLowerCase()
+    ]
+      .join(' ')
+      .toLowerCase()
 
     const matchesSearch =
       !keyword || searchableText.includes(keyword)
@@ -148,3 +211,4 @@ export function searchFiles(
     return matchesSearch && matchesCategory
   })
 }
+ 

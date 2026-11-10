@@ -47,7 +47,6 @@ const props = defineProps({
 // 부모 화면으로 관리 메뉴 이벤트 전달
 const emit = defineEmits([
   'edit',
-  'move',
   'favorite',
   'delete'
 ])
@@ -141,16 +140,17 @@ const folderColor = computed(() => {
       <div class="folder-title-row">
         <h3>{{ name }}</h3>
 
-        <ItemActionMenu
-          type="folder"
-          :item="folderItem"
-          :current-user-id="currentUserId"
-          :is-admin="isAdmin"
-          @edit="emit('edit', $event)"
-          @move="emit('move', $event)"
-          @favorite="emit('favorite', $event)"
-          @delete="emit('delete', $event)"
-        />
+<ItemActionMenu
+  type="folder"
+  :item="folderItem"
+  :current-user-id="currentUserId"
+  :is-admin="isAdmin"
+  @edit="emit('edit', $event)"
+  @favorite="emit('favorite', $event)"
+  @delete="emit('delete', $event)"
+/>
+
+
       </div>
 
       <!-- 카테고리 태그 -->

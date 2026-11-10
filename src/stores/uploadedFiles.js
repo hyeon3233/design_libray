@@ -1,6 +1,10 @@
 
 import { ref } from 'vue'
 import { folderList } from './folders'
+import {
+  registerUploadedFilesRef,
+  isFolderHidden
+} from './trash'
 
 const DB_NAME = 'cherry-design-archive'
 const DB_VERSION = 2
@@ -8,6 +12,7 @@ const FILE_STORE = 'uploaded-files'
 const FOLDER_STORE = 'uploaded-folders'
 
 export const uploadedFiles = ref([])
+registerUploadedFilesRef(uploadedFiles)
 
 let dbPromise = null
 const previewUrls = new Map()
@@ -116,16 +121,23 @@ export async function loadUploadedFiles() {
     readAll(db, FOLDER_STORE)
   ])
 
-  // 저장된 하위 폴더 복원
-  for (const folder of folders) {
-    const exists = folderList.value.some(
-      item => String(item.id) === String(folder.id)
-    )
-
-    if (!exists) {
-      folderList.value.push(folder)
-    }
+  
+// 저장된 하위 폴더 복원
+for (const folder of folders) {
+  // 휴지통 또는 영구 삭제된 폴더는 표시하지 않음
+  if (isFolderHidden(folder.id)) {
+    continue
   }
+
+  const exists = folderList.value.some(
+    item => String(item.id) === String(folder.id)
+  )
+
+  if (!exists) {
+    folderList.value.push(folder)
+  }
+}
+
 
   // 기존 썸네일 URL 정리
   previewUrls.forEach(url => URL.revokeObjectURL(url))
